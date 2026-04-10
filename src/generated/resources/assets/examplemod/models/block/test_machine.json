@@ -1,0 +1,7 @@
+{
+  "parent": "examplemod:block/simple_machine",
+  "textures": {
+    "front": "minecraft:block/blast_furnace_front",
+    "side": "minecraft:block/iron_block"
+  }
+}

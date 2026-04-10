@@ -1,8 +1,6 @@
 package cn.minecraftbe.examplemod.item;
 
-import net.minecraft.world.item.Item;
-
-public class TestItem extends Item {
+public class TestItem extends WrenchItem {
     public TestItem(Properties properties) {
         super(properties);
     }

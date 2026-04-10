@@ -12,5 +12,5 @@ public class Items {
 
     public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item",
             p -> p.food(new FoodProperties.Builder().alwaysEdible().nutrition(1).saturationModifier(2f).build()));
-    public static final DeferredItem<TestItem> TEST_ITEM = ITEMS.registerItem("test_item", TestItem::new);
+    public static final DeferredItem<Item> TEST_ITEM = ITEMS.registerItem("test_item", TestItem::new);
 }
