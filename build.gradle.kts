@@ -1,3 +1,5 @@
+import org.slf4j.event.Level
+
 plugins {
     `java-library`
     `maven-publish`
@@ -38,10 +40,19 @@ sourceSets {
             exclude("src/generated/**/.cache") // datagen cache files
         }
     }
+
+    val datagen by creating {
+        java.srcDir("src/datagen/java")
+
+        // IMPORTANT: must include both <xxxClasspath> AND its <output> classes!!
+        compileClasspath += main.get().compileClasspath + main.get().output
+        runtimeClasspath += main.get().runtimeClasspath + main.get().output
+    }
 }
 
 repositories {
     // Add here additional repositories if required by some of the dependencies below.
+    mavenCentral()
 }
 
 base {
@@ -85,6 +96,7 @@ neoForge {
         create("data") {
             clientData()
 
+            sourceSet.set(sourceSets.getByName("datagen"))
             // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
             // gameDirectory = project.file("run-data")
 
@@ -112,7 +124,7 @@ neoForge {
             // Recommended logging level for the console
             // You can set various levels here.
             // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
-            logLevel = org.slf4j.event.Level.DEBUG
+            logLevel = Level.DEBUG
         }
     }
 
@@ -122,6 +134,7 @@ neoForge {
         // multi mod projects should define one per mod
         create(mod_id) {
             sourceSet(sourceSets.main.get())
+            sourceSet(sourceSets["datagen"])
         }
     }
 }
@@ -132,7 +145,6 @@ neoForge {
 // a dependency that will be present for runtime testing but that is
 // "optional", meaning it will not be pulled by dependents of this mod.
 configurations {
-
     val localRuntime = maybeCreate("localRuntime")
     getByName("runtimeClasspath") {
         extendsFrom(localRuntime)

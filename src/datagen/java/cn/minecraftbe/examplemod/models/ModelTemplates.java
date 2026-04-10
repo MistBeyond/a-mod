@@ -1,4 +1,4 @@
-package cn.minecraftbe.examplemod.datagen.models;
+package cn.minecraftbe.examplemod.models;
 
 import cn.minecraftbe.examplemod.ExampleMod;
 import net.minecraft.client.data.models.model.ModelTemplate;

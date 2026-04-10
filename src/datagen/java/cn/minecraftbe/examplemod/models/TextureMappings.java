@@ -1,4 +1,4 @@
-package cn.minecraftbe.examplemod.datagen.models;
+package cn.minecraftbe.examplemod.models;
 
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;

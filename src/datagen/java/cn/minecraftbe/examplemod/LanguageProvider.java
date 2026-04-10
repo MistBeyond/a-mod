@@ -1,23 +1,15 @@
-package cn.minecraftbe.examplemod.datagen;
+package cn.minecraftbe.examplemod;
 
-import cn.minecraftbe.examplemod.ExampleMod;
 import net.minecraft.data.PackOutput;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 import org.apache.commons.lang3.StringUtils;
 
-@EventBusSubscriber(modid = ExampleMod.MODID)
+
 public class LanguageProvider extends net.neoforged.neoforge.common.data.LanguageProvider {
 
     public LanguageProvider(PackOutput output) {
         super(output, ExampleMod.MODID, "en_us");
     }
 
-    @SubscribeEvent
-    public static void onGatherData(GatherDataEvent.Client event) {
-        event.createProvider(LanguageProvider::new);
-    }
 
     @Override
     protected void addTranslations() {

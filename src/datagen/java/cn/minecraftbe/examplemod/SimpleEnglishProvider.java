@@ -1,4 +1,4 @@
-package cn.minecraftbe.examplemod.datagen;
+package cn.minecraftbe.examplemod;
 
 import cn.minecraftbe.examplemod.block.Blocks;
 import cn.minecraftbe.examplemod.item.Items;

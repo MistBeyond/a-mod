@@ -1,4 +1,4 @@
-package cn.minecraftbe.examplemod.datagen.models;
+package cn.minecraftbe.examplemod.models;
 
 import cn.minecraftbe.examplemod.ExampleMod;
 import cn.minecraftbe.examplemod.block.Blocks;
@@ -9,9 +9,6 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -20,19 +17,12 @@ import org.jspecify.annotations.NonNull;
 import java.util.Set;
 
 
-@EventBusSubscriber(modid = ExampleMod.MODID)
 public class ModelProvider extends net.minecraft.client.data.models.ModelProvider {
-
     public static final Set<DeferredItem<Item>> CUSTOM_ITEM = Set.of(Items.TEST_ITEM, Items.EXAMPLE_ITEM);
     public static final Set<DeferredBlock<Block>> CUSTOM_BLOCK = Set.of(cn.minecraftbe.examplemod.block.Blocks.TEST_MACHINE);
 
     public ModelProvider(PackOutput output) {
         super(output, ExampleMod.MODID);
-    }
-
-    @SubscribeEvent // on the mod event bus
-    public static void gatherData(GatherDataEvent.Client event) {
-        event.createProvider(ModelProvider::new);
     }
 
     private static boolean isCustom(Item item) {
