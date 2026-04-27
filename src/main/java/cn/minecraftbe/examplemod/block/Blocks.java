@@ -14,30 +14,22 @@ import java.util.function.UnaryOperator;
 
 
 public class Blocks {
-    // Create a Deferred Register to hold Blocks which will all be registered under the "examplemod" namespace
-    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(ExampleMod.MODID);
 
+    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(ExampleMod.MODID);
     public static final DeferredBlock<Block> TEST_MACHINE = registerWithBlockItem(
-            "test_machine",
-            TestMachine::new,
-            p -> p.sound(SoundType.NETHERITE_BLOCK)
+            "test_machine", TestMachine::new, p -> p.sound(SoundType.NETHERITE_BLOCK)
     );
     public static final DeferredBlock<Block> EXAMPLE_BLOCK = registerSimpleWithBlockItem(
-            "example_block",
-            p -> p.mapColor(MapColor.STONE)
+            "example_block", p -> p.mapColor(MapColor.STONE)
     );
 
-    public static DeferredBlock<Block> registerSimpleWithBlockItem(
-            String name, UnaryOperator<BlockBehaviour.Properties> properties
-    ) {
+    public static DeferredBlock<Block> registerSimpleWithBlockItem(String name, UnaryOperator<BlockBehaviour.Properties> properties) {
         var ret = BLOCKS.registerSimpleBlock(name, properties);
         Items.ITEMS.registerSimpleBlockItem(name, ret);
         return ret;
     }
 
-    public static <B extends Block> DeferredBlock<B> registerWithBlockItem(
-            String name, Function<BlockBehaviour.Properties, B> func
-    ) {
+    public static <B extends Block> DeferredBlock<B> registerWithBlockItem(String name, Function<BlockBehaviour.Properties, B> func) {
 
         var ret = BLOCKS.registerBlock(name, func);
         Items.ITEMS.registerSimpleBlockItem(name, ret);
@@ -45,11 +37,7 @@ public class Blocks {
     }
 
 
-    public static <B extends Block> DeferredBlock<B> registerWithBlockItem(
-            String name,
-            Function<BlockBehaviour.Properties, B> func,
-            UnaryOperator<BlockBehaviour.Properties> properties
-    ) {
+    public static <B extends Block> DeferredBlock<B> registerWithBlockItem(String name, Function<BlockBehaviour.Properties, B> func, UnaryOperator<BlockBehaviour.Properties> properties) {
         var ret = BLOCKS.registerBlock(name, func, properties);
         Items.ITEMS.registerSimpleBlockItem(name, ret);
         return ret;

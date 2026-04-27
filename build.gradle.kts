@@ -1,3 +1,5 @@
+@file:Suppress("LocalVariableName")
+
 import org.slf4j.event.Level
 
 plugins {
@@ -8,21 +10,16 @@ plugins {
     id("io.freefair.lombok") version "9.2.0"
 }
 
-val mod_version: String by project
-val mod_group_id: String by project
-val mod_id: String by project
-val neo_version: String by project
-val minecraft_version: String by project
+val mod_version: String by project.properties
+val mod_group_id: String by project.properties
+val mod_id: String by project.properties
+val neo_version: String by project.properties
+val minecraft_version: String by project.properties
 val minecraft_version_range: String by project
-val mod_name: String by project
-val mod_license: String by project
+val mod_name: String by project.properties
+val mod_license: String by project.properties
 
 tasks.named<Wrapper>("wrapper").configure {
-    // Define wrapper values here so as to not have to always do so when updating gradlew.properties.
-    // Switching this to Wrapper.DistributionType.ALL will download the full gradle sources that comes with
-    // documentation attached on cursor hover of gradle classes and methods. However, this comes with increased
-    // file size for Gradle. If you do switch this to ALL, run the Gradle wrapper task twice afterwards.
-    // (Verify by checking gradle/wrapper/gradle-wrapper.properties to see if distributionUrl now points to `-all`)
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -41,18 +38,32 @@ sourceSets {
         }
     }
 
-    val datagen by creating {
+    create("datagen") {
         java.srcDir("src/datagen/java")
 
-        // IMPORTANT: must include both <xxxClasspath> AND its <output> classes!!
-        compileClasspath += main.get().compileClasspath + main.get().output
-        runtimeClasspath += main.get().runtimeClasspath + main.get().output
+        compileClasspath += main.get().output
+        runtimeClasspath += main.get().output
     }
 }
 
 repositories {
     // Add here additional repositories if required by some of the dependencies below.
     mavenCentral()
+    maven {
+        name = "Modrinth"
+        url = uri("https://api.modrinth.com/maven")
+    }
+
+    maven {
+        // location of the maven that hosts JEI files since January 2023
+        name = "Jared's maven"
+        url = uri("https://maven.blamejared.com/")
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = uri("https://modmaven.dev")
+    }
 }
 
 base {
@@ -95,22 +106,18 @@ neoForge {
 
         create("data") {
             clientData()
-
             sourceSet.set(sourceSets.getByName("datagen"))
-            // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
-            // gameDirectory = project.file("run-data")
-
-            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
             programArguments.addAll(
                 "--mod",
                 mod_id,
                 "--all",
-                "--output",
-                file("src/generated/resources/").absolutePath,
                 "--existing",
-                file("src/main/resources/").absolutePath
+                file("src/main/resources/").absolutePath,
+                "--output",
+                file("src/generated/resources").absolutePath
             )
         }
+
 
         // applies to all the run configs above
         configureEach {
@@ -139,44 +146,32 @@ neoForge {
     }
 }
 
-
 // Sets up a dependency configuration called "localRuntime".
 // This configuration should be used instead of "runtimeOnly" to declare
 // a dependency that will be present for runtime testing but that is
 // "optional", meaning it will not be pulled by dependents of this mod.
 configurations {
     val localRuntime = maybeCreate("localRuntime")
-    getByName("runtimeClasspath") {
-        extendsFrom(localRuntime)
-    }
+    named("runtimeClasspath") { extendsFrom(localRuntime) }
+    named("datagenRuntimeClasspath") { extendsFrom(runtimeClasspath.get()) }
+    named("datagenCompileClasspath") { extendsFrom(compileClasspath.get()) }
 }
 
 dependencies {
-    // Example optional mod dependency with JEI
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
-    // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"
-    // We add the full version to localRuntime, not runtimeOnly, so that we do not publish a dependency on it
-    // localRuntime "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
+    fun DependencyHandler.localRuntime(dep: Any) = add("localRuntime", dep)
+    val jei_version: String by project.properties
+    val jade_version: String by project.properties
 
-    // Example mod dependency using a mod jar from ./libs with a flat dir repository
-    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
-    // The group id is ignored when searching -- in this case, it is "blank"
-    // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
+    // JEI
+    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
+    localRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
-    // Example mod dependency using a file as dependency
-    // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
-
-    // Example project dependency using a sister or child project:
-    // implementation project(":myproject")
-
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    // Jade
+    compileOnly("maven.modrinth:jade:${jade_version}")
+    localRuntime("maven.modrinth:jade:${jade_version}")
 }
 
-// This block of code expands all declared replace properties in the specified resource targets.
-// A missing property will result in an error. Properties are expanded using ${} Groovy notation.
 var generateModMetadata = tasks.register<ProcessResources>("generateModMetadata") {
     var replaceProperties = mapOf(
         "minecraft_version" to minecraft_version,
@@ -194,7 +189,9 @@ var generateModMetadata = tasks.register<ProcessResources>("generateModMetadata"
 }
 // Include the output of "generateModMetadata" as an input directory for the build
 // this works with both building through Gradle and the IDE.
-sourceSets { main { resources { srcDir(generateModMetadata) } } }
+sourceSets.main {
+    resources.srcDir { generateModMetadata }
+}
 // To avoid having to run "generateModMetadata" manually, make it run on every project reload
 neoForge.ideSyncTask(generateModMetadata)
 
@@ -212,8 +209,10 @@ publishing {
     }
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    options.encoding = "UTF-8" // Use the UTF-8 charset for Java compilation
+tasks {
+    withType<JavaCompile>().configureEach {
+        options.encoding = "UTF-8" // Use the UTF-8 charset for Java compilation
+    }
 }
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.

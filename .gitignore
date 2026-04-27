@@ -5,7 +5,7 @@ build/
 !**/src/**/build/
 
 ### IntelliJ IDEA ###
-#.idea/
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -38,3 +38,5 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
+
+external_source/

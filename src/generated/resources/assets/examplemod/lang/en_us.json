@@ -1,6 +1,7 @@
 {
   "block.examplemod.example_block": "Example Block",
   "block.examplemod.test_machine": "Test Machine",
+  "config.jade.plugin_examplemod.test_machine": "Test Machine",
   "examplemod.configuration.items": "Item List",
   "examplemod.configuration.logDirtBlock": "Log Dirt Block",
   "examplemod.configuration.magicNumber": "Magic Number",
@@ -8,8 +9,8 @@
   "examplemod.configuration.section.examplemod.common.toml": "Example Mod Configs",
   "examplemod.configuration.section.examplemod.common.toml.title": "Example Mod Configs",
   "examplemod.configuration.title": "Example Mod Configs",
-  "examplemod.overlaymessage.wrench.rotation_failed": "Rotation failed",
+  "examplemod.overlaymessage.wrench.rotation_failed": "Rotation failed on %s axis",
   "item.examplemod.example_item": "Example Item",
-  "item.examplemod.test_item": "Test Item",
+  "item.examplemod.test_wrench": "Test Wrench",
   "itemGroup.examplemod": "Example Tab"
 }
