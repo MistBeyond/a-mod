@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="https://logging.apache.org/xml/ns"
+               xsi:schemaLocation="https://logging.apache.org/xml/ns https://logging.apache.org/xml/ns/log4j-config-2.xsd">
+    <Appenders>
+        <Console name="CONSOLE">
+            <PatternLayout
+                    pattern="[%d{HH:mm:ss}] [%t/%highlight{%level}{FATAL=white, ERROR=red, WARN=yellow, INFO=green, DEBUG=cyan, TRACE=blue}] [%c{2.}/%markerSimpleName]: %msg{nolookups}%n"
+                    disableAnsi="false"/>
+        </Console>
+        <File name="FILE" fileName="logs/latest.log" append="false">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%c{2.}/%markerSimpleName]: %msg{nolookups}%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="DEBUG">
+            <AppenderRef ref="CONSOLE"/>
+            <AppenderRef ref="FILE"/>
+        </Root>
+    </Loggers>
+</Configuration>

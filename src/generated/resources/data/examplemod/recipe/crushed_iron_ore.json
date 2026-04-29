@@ -1,0 +1,11 @@
+{
+  "type": "examplemod:crushing",
+  "current": 1,
+  "duration": 200,
+  "ingredient": "minecraft:raw_iron",
+  "result": {
+    "count": 2,
+    "id": "examplemod:crushed_iron_ore"
+  },
+  "voltage": 32
+}

@@ -8,6 +8,7 @@ plugins {
     id("net.neoforged.moddev").version("2.0.141")
     idea
     id("io.freefair.lombok") version "9.2.0"
+    kotlin("jvm")
 }
 
 val mod_version: String by project.properties
@@ -44,6 +45,13 @@ sourceSets {
         compileClasspath += main.get().output
         runtimeClasspath += main.get().output
     }
+
+    create("earlycheck") {
+        java.srcDir("src/earlycheck/java")
+
+        compileClasspath += main.get().output
+        runtimeClasspath += main.get().output
+    }
 }
 
 repositories {
@@ -72,6 +80,23 @@ base {
 
 // Mojang ships Java 25 to end users in 26.1, so mods should target Java 25.
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+tasks {
+    // runs the same runtime check without initializing game.
+    // this task is not strictly required before running client, because the same check will run during mod initialization.
+    // however, running it early will detect issues with the mod custom registry more efficiently.
+
+    // actually, I don't know how to write annotation processor to check registries at compile time.
+    // So this is actually an alternative.
+    val runEarlyCheck by registering(JavaExec::class) {
+        description = "To make sure all of custom auto registers are correct."
+        classpath = sourceSets["earlycheck"].runtimeClasspath
+        mainClass = "com.mistbeyond.examplemod.earlycheck.Main"
+        args = listOf("source", sourceSets.main.get().output.asPath)
+    }
+
+    build.get().dependsOn(runEarlyCheck)
+}
 
 neoForge {
     // Specify the version of NeoForge to use.
@@ -127,11 +152,13 @@ neoForge {
             // "REGISTRIES": For firing of registry events.
             // "REGISTRYDUMP": For getting the contents of all registries.
             systemProperty("forge.logging.markers", "REGISTRIES")
+            jvmArgument("-XX:+AllowEnhancedClassRedefinition")
 
             // Recommended logging level for the console
             // You can set various levels here.
             // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
             logLevel = Level.DEBUG
+            // tasksBefore = listOf(tasks.named("runEarlyCheck"))
         }
     }
 
@@ -155,12 +182,17 @@ configurations {
     named("runtimeClasspath") { extendsFrom(localRuntime) }
     named("datagenRuntimeClasspath") { extendsFrom(runtimeClasspath.get()) }
     named("datagenCompileClasspath") { extendsFrom(compileClasspath.get()) }
+    named("earlycheckRuntimeClasspath") { extendsFrom(runtimeClasspath.get()) }
+    named("earlycheckCompileClasspath") { extendsFrom(compileClasspath.get()) }
 }
 
 dependencies {
     fun DependencyHandler.localRuntime(dep: Any) = add("localRuntime", dep)
     val jei_version: String by project.properties
     val jade_version: String by project.properties
+
+    // dataGen
+    "datagenImplementation"(kotlin("stdlib-jdk8"))
 
     // JEI
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
@@ -170,9 +202,11 @@ dependencies {
     // Jade
     compileOnly("maven.modrinth:jade:${jade_version}")
     localRuntime("maven.modrinth:jade:${jade_version}")
+
 }
 
 var generateModMetadata = tasks.register<ProcessResources>("generateModMetadata") {
+    description = ""
     var replaceProperties = mapOf(
         "minecraft_version" to minecraft_version,
         "minecraft_version_range" to minecraft_version_range,
@@ -209,11 +243,10 @@ publishing {
     }
 }
 
-tasks {
-    withType<JavaCompile>().configureEach {
-        options.encoding = "UTF-8" // Use the UTF-8 charset for Java compilation
-    }
+tasks.withType<JavaCompile>().configureEach {
+    options.encoding = "UTF-8" // Use the UTF-8 charset for Java compilation
 }
+
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
 idea {
@@ -221,4 +254,8 @@ idea {
         isDownloadSources = true
         isDownloadJavadoc = true
     }
+}
+
+kotlin {
+    jvmToolchain(25)
 }

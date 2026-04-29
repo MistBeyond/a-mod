@@ -1,7 +1,17 @@
-<code_scheme name="Project" version="173">
+<code_scheme name="Default" version="173">
     <option name="LINE_SEPARATOR" value="&#10;"/>
     <codeStyleSettings language="JAVA">
         <arrangement>
+            <groups>
+                <group>
+                    <type>GETTERS_AND_SETTERS</type>
+                    <order>KEEP</order>
+                </group>
+                <group>
+                    <type>OVERRIDDEN_METHODS</type>
+                    <order>KEEP</order>
+                </group>
+            </groups>
             <rules>
                 <section>
                     <rule>
@@ -90,16 +100,6 @@
                             <AND>
                                 <FIELD>true</FIELD>
                                 <PRIVATE>true</PRIVATE>
-                                <STATIC>true</STATIC>
-                            </AND>
-                        </match>
-                    </rule>
-                </section>
-                <section>
-                    <rule>
-                        <match>
-                            <AND>
-                                <INITIALIZER_BLOCK>true</INITIALIZER_BLOCK>
                                 <STATIC>true</STATIC>
                             </AND>
                         </match>
@@ -199,13 +199,6 @@
                 <section>
                     <rule>
                         <match>
-                            <INITIALIZER_BLOCK>true</INITIALIZER_BLOCK>
-                        </match>
-                    </rule>
-                </section>
-                <section>
-                    <rule>
-                        <match>
                             <CONSTRUCTOR>true</CONSTRUCTOR>
                         </match>
                     </rule>
@@ -215,6 +208,40 @@
                         <match>
                             <AND>
                                 <METHOD>true</METHOD>
+                                <PUBLIC>true</PUBLIC>
+                                <STATIC>true</STATIC>
+                            </AND>
+                        </match>
+                    </rule>
+                </section>
+                <section>
+                    <rule>
+                        <match>
+                            <AND>
+                                <METHOD>true</METHOD>
+                                <PROTECTED>true</PROTECTED>
+                                <STATIC>true</STATIC>
+                            </AND>
+                        </match>
+                    </rule>
+                </section>
+                <section>
+                    <rule>
+                        <match>
+                            <AND>
+                                <METHOD>true</METHOD>
+                                <PACKAGE_PRIVATE>true</PACKAGE_PRIVATE>
+                                <STATIC>true</STATIC>
+                            </AND>
+                        </match>
+                    </rule>
+                </section>
+                <section>
+                    <rule>
+                        <match>
+                            <AND>
+                                <METHOD>true</METHOD>
+                                <PRIVATE>true</PRIVATE>
                                 <STATIC>true</STATIC>
                             </AND>
                         </match>
@@ -264,6 +291,23 @@
                     <rule>
                         <match>
                             <METHOD>true</METHOD>
+                        </match>
+                    </rule>
+                </section>
+                <section>
+                    <rule>
+                        <match>
+                            <AND>
+                                <INITIALIZER_BLOCK>true</INITIALIZER_BLOCK>
+                                <STATIC>true</STATIC>
+                            </AND>
+                        </match>
+                    </rule>
+                </section>
+                <section>
+                    <rule>
+                        <match>
+                            <INITIALIZER_BLOCK>true</INITIALIZER_BLOCK>
                         </match>
                     </rule>
                 </section>
