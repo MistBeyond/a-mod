@@ -60,13 +60,13 @@ class ModLanguageProvider(output: PackOutput) : LanguageProvider(output, Ids.MOD
         // gui.modid.xxxxxx
         fun guiKey(idPath: String) = Util.makeDescriptionId("gui", Ids.thisMod(idPath))
         addByKeyString(guiKey("category/crushing"))
-        add(guiKey("energy/consumption"), "Consumption: %s")
-        add(guiKey("energy/voltage"), "Voltage: %s (%s)")
-        add(guiKey("energy/voltage_tier"), "Voltage Tier: %s")
-        add(guiKey("energy/current"), "Current: %s")
-        add(guiKey("energy/duration"), "Duration: %s")
-        add(guiKey("energy/power"), "Power: %s")
-        add(guiKey("energy/eu"), "%s / %s")
+        add(guiKey("energy.consumption"), "Consumption: %s")
+        add(guiKey("energy.voltage"), "Voltage: %s (%s)")
+        add(guiKey("energy.voltage_tier"), "Voltage Tier: %s")
+        add(guiKey("energy.current"), "Current: %s")
+        add(guiKey("energy.duration"), "Duration: %s")
+        add(guiKey("energy.power"), "Power: %s")
+        add(guiKey("energy.eu"), "%s / %s")
     }
 
     private fun addByKeyString(key: String) {

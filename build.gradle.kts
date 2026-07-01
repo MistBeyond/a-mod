@@ -1,5 +1,3 @@
-@file:Suppress("LocalVariableName")
-
 import org.slf4j.event.Level
 
 plugins {
@@ -11,21 +9,21 @@ plugins {
     kotlin("jvm")
 }
 
-val mod_version: String by project.properties
-val mod_group_id: String by project.properties
-val mod_id: String by project.properties
-val neo_version: String by project.properties
-val minecraft_version: String by project.properties
-val minecraft_version_range: String by project
-val mod_name: String by project.properties
-val mod_license: String by project.properties
+val modVersion = findProperty("mod_version") as String
+val modGroupId = findProperty("mod_group_id") as String
+val modId = findProperty("mod_id") as String
+val neoVersion = findProperty("neo_version") as String
+val minecraftVersion = findProperty("minecraft_version") as String
+val minecraftVersionRange = findProperty("minecraft_version_range") as String
+val modName = findProperty("mod_name") as String
+val modLicense = findProperty("mod_license") as String
 
 tasks.named<Wrapper>("wrapper").configure {
     distributionType = Wrapper.DistributionType.ALL
 }
 
-version = mod_version
-group = mod_group_id
+version = modVersion
+group = modGroupId
 
 sourceSets {
     main {
@@ -75,7 +73,7 @@ repositories {
 }
 
 base {
-    archivesName = mod_id
+    archivesName = modId
 }
 
 // Mojang ships Java 25 to end users in 26.1, so mods should target Java 25.
@@ -88,7 +86,7 @@ tasks {
 
     // actually, I don't know how to write annotation processor to check registries at compile time.
     // So this is actually an alternative.
-    val runEarlyCheck by registering(JavaExec::class) {
+    val runEarlyCheck = register<JavaExec>("runEarlyCheck") {
         description = "To make sure all of custom auto registers are correct."
         classpath = sourceSets["earlycheck"].runtimeClasspath
         mainClass = "com.mistbeyond.examplemod.earlycheck.Main"
@@ -100,7 +98,7 @@ tasks {
 
 neoForge {
     // Specify the version of NeoForge to use.
-    version = neo_version
+    version = neoVersion
 
     // This line is optional. Access Transformers are automatically detected
     // accessTransformers = project.files("src/main/resources/META-INF/accesstransformer.cfg")
@@ -112,13 +110,13 @@ neoForge {
             client()
 
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            systemProperty("neoforge.enabledGameTestNamespaces", mod_id)
+            systemProperty("neoforge.enabledGameTestNamespaces", modId)
         }
 
         create("server") {
             server()
             programArgument("--nogui")
-            systemProperty("neoforge.enabledGameTestNamespaces", mod_id)
+            systemProperty("neoforge.enabledGameTestNamespaces", modId)
         }
 
         // This run config launches GameTestServer and runs all registered gametests, then exits.
@@ -126,7 +124,7 @@ neoForge {
         // The gametest system is also enabled by default for other run configs under the /test command.
         create("gameTestServer") {
             type = "gameTestServer"
-            systemProperty("neoforge.enabledGameTestNamespaces", mod_id)
+            systemProperty("neoforge.enabledGameTestNamespaces", modId)
         }
 
         create("data") {
@@ -134,7 +132,7 @@ neoForge {
             sourceSet.set(sourceSets.getByName("datagen"))
             programArguments.addAll(
                 "--mod",
-                mod_id,
+                modId,
                 "--all",
                 "--existing",
                 file("src/main/resources/").absolutePath,
@@ -166,7 +164,7 @@ neoForge {
         // define mod <-> source bindings
         // these are used to tell the game which sources are for which mod
         // multi mod projects should define one per mod
-        create(mod_id) {
+        create(modId) {
             sourceSet(sourceSets.main.get())
             sourceSet(sourceSets["datagen"])
         }
@@ -188,33 +186,32 @@ configurations {
 
 dependencies {
     fun DependencyHandler.localRuntime(dep: Any) = add("localRuntime", dep)
-    val jei_version: String by project.properties
-    val jade_version: String by project.properties
+    val jeiVersion = findProperty("jei_version") as String
+    val jadeVersion = findProperty("jade_version") as String
 
-    // dataGen
-    "datagenImplementation"(kotlin("stdlib-jdk8"))
+    // datagen
+    "datagenImplementation"(kotlin("stdlib"))
 
     // JEI
-    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
-    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
-    localRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraftVersion}-common-api:${jeiVersion}")
+    compileOnly("mezz.jei:jei-${minecraftVersion}-neoforge-api:${jeiVersion}")
+    localRuntime("mezz.jei:jei-${minecraftVersion}-neoforge:${jeiVersion}")
 
     // Jade
-    compileOnly("maven.modrinth:jade:${jade_version}")
-    localRuntime("maven.modrinth:jade:${jade_version}")
-
+    compileOnly("maven.modrinth:jade:${jadeVersion}")
+    localRuntime("maven.modrinth:jade:${jadeVersion}")
 }
 
 var generateModMetadata = tasks.register<ProcessResources>("generateModMetadata") {
     description = ""
     var replaceProperties = mapOf(
-        "minecraft_version" to minecraft_version,
-        "minecraft_version_range" to minecraft_version_range,
-        "neo_version" to neo_version,
-        "mod_id" to mod_id,
-        "mod_name" to mod_name,
-        "mod_license" to mod_license,
-        "mod_version" to mod_version,
+        "minecraft_version" to minecraftVersion,
+        "minecraft_version_range" to minecraftVersionRange,
+        "neo_version" to neoVersion,
+        "mod_id" to modId,
+        "mod_name" to modName,
+        "mod_license" to modLicense,
+        "mod_version" to modVersion,
     )
     inputs.properties(replaceProperties)
     expand(replaceProperties)

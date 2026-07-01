@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 // todo: refactor these pieces of sh1t
 class NeoApiHelper {
+    static final List<String> BLOCKED_PACKAGE = List.of("com.mistbeyond.examplemod.earlycheck", "com.mistbeyond.examplemod.data", "com.mistbeyond.examplemod.integration");
+
     private NeoApiHelper() {
     }
 
@@ -95,6 +97,6 @@ class NeoApiHelper {
     }
 
     static boolean acceptClasses(String className) {
-        return !className.contains("com.mistbeyond.examplemod.earlycheck") && !className.contains("com.mistbeyond.examplemod.data");
+        return BLOCKED_PACKAGE.stream().anyMatch(className::startsWith);
     }
 }
