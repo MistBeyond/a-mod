@@ -63,6 +63,7 @@ public class ItemAccessEUHandler implements EUEnergyHandler, EnergyConversionPer
         if (access.getAmount() == 0) {
             return 0;
         }
+        // todo: support more amount
         if (access.getAmount() != 1) {
             throw new UnsupportedOperationException(String.format("Invalid item amount for EU transfer: %s", access.getAmount()));
         }

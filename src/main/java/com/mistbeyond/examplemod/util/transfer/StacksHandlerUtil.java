@@ -40,6 +40,7 @@ public class StacksHandlerUtil {
     /**
      * Unsafe, use the {@link StacksHandlerUtil#growItem(StacksResourceHandler, int, int, TransactionContext) transaction version}
      */
+    @Deprecated
     public static void grow(StacksResourceHandler<ItemStack, ItemResource> handler, int index, int amount) {
         var updated = getItem(handler, index);
         updated.grow(amount);
@@ -49,6 +50,7 @@ public class StacksHandlerUtil {
     /**
      * Unsafe, use the {@link StacksHandlerUtil#shrinkItem(StacksResourceHandler, int, int, TransactionContext) transaction version}
      */
+    @Deprecated
     public static void shrink(StacksResourceHandler<ItemStack, ItemResource> handler, int index, int amount) {
         grow(handler, index, -amount);
     }
@@ -56,6 +58,7 @@ public class StacksHandlerUtil {
     /**
      * Unsafe, use the {transaction version}
      */
+    @Deprecated
     public static void replaceAndGrow(StacksResourceHandler<ItemStack, ItemResource> handler, int index, Item item, int amount) {
         handler.set(index, ItemResource.of(item), handler.getAmountAsInt(index) + amount);
     }
@@ -63,6 +66,7 @@ public class StacksHandlerUtil {
     /**
      * Unsafe, use the {transaction version}
      */
+    @Deprecated
     public static void replaceAndShrink(StacksResourceHandler<ItemStack, ItemResource> handler, int index, Item item, int amount) {
         replaceAndGrow(handler, index, item, -amount);
     }

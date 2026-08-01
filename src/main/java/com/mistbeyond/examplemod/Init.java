@@ -4,7 +4,7 @@ import com.mistbeyond.examplemod.block.Blocks;
 import com.mistbeyond.examplemod.block.entity.TestMachineBlockEntity;
 import com.mistbeyond.examplemod.block.entity.machine.CrusherEntity;
 import com.mistbeyond.examplemod.core.energy.EUEnergyHandler;
-import com.mistbeyond.examplemod.core.registry.impl.CommonRegistrar;
+import com.mistbeyond.examplemod.core.registry.CommonRegistrar;
 import com.mistbeyond.examplemod.item.Items;
 import com.mistbeyond.examplemod.item.componet.ModDataComponents;
 import com.mistbeyond.examplemod.recipe.RecipeSerializers;

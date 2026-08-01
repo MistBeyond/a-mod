@@ -1,5 +1,6 @@
-package com.mistbeyond.examplemod.core.registry.impl;
+package com.mistbeyond.examplemod.core.registry;
 
+import com.mistbeyond.examplemod.core.registry.impl.CommonRegistryTable;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.Identifier;

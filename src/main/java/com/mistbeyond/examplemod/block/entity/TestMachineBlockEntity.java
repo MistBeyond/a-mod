@@ -205,6 +205,7 @@ public class TestMachineBlockEntity extends BlockEntity implements MenuProvider 
         return canSmelt(serverLevel);
     }
 
+    @SuppressWarnings("deprecation")
     public void consumeFuel(ServerLevel serverLevel) {
         var fuel = StacksHandlerUtil.getItem(itemHandler, FUEL_SLOT);
         litTotal = litRemaining = fuel.getBurnTime(RecipeType.SMELTING, serverLevel.fuelValues()) / SMELT_SPEED;
@@ -216,6 +217,7 @@ public class TestMachineBlockEntity extends BlockEntity implements MenuProvider 
         this.smeltProgress = 0;
     }
 
+    @SuppressWarnings("deprecation")
     public void finishSmelting(ServerLevel serverLevel) {
         var input = new SingleRecipeInput(StacksHandlerUtil.getItem(itemHandler, INGREDIENT_SLOT));
         var recipe = QUICK_CHECK.getRecipeFor(input, serverLevel).orElse(null);

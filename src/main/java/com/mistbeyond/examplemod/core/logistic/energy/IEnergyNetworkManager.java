@@ -12,7 +12,12 @@ public interface IEnergyNetworkManager {
         return EnergyNetworkManager.INSTANCE;
     }
 
-    Set<IEnergyNetwork> getNetworkAt(ServerLevel level, BlockPos pos);
+    Set<IEnergyNetwork> getNetworksAt(ServerLevel level, BlockPos pos);
 
-    Collection<IEnergyNetwork> getNetworks();
+    Collection<IEnergyNetwork> getNetworks(ServerLevel level);
+
+    /**
+     * @return merged network
+     */
+    IEnergyNetwork mergeNetwork(ServerLevel level, BlockPos where);
 }

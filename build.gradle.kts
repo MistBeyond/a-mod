@@ -193,13 +193,13 @@ dependencies {
     "datagenImplementation"(kotlin("stdlib"))
 
     // JEI
-    compileOnly("mezz.jei:jei-${minecraftVersion}-common-api:${jeiVersion}")
-    compileOnly("mezz.jei:jei-${minecraftVersion}-neoforge-api:${jeiVersion}")
-    localRuntime("mezz.jei:jei-${minecraftVersion}-neoforge:${jeiVersion}")
+    compileOnly("mezz.jei:jei-${minecraftVersion}-common-api:$jeiVersion")
+    compileOnly("mezz.jei:jei-${minecraftVersion}-neoforge-api:$jeiVersion")
+    localRuntime("mezz.jei:jei-${minecraftVersion}-neoforge:$jeiVersion")
 
     // Jade
-    compileOnly("maven.modrinth:jade:${jadeVersion}")
-    localRuntime("maven.modrinth:jade:${jadeVersion}")
+    compileOnly("maven.modrinth:jade:$jadeVersion")
+    localRuntime("maven.modrinth:jade:$jadeVersion")
 }
 
 var generateModMetadata = tasks.register<ProcessResources>("generateModMetadata") {
