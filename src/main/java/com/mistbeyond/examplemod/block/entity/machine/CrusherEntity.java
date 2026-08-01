@@ -125,7 +125,7 @@ public class CrusherEntity extends SingleBlockMachineEntity<CrushingRecipe> impl
         }
         if (!itemConsumed) {
             itemConsumed = true;
-            StacksHandlerUtil.shrink(itemHandler, 0, 1);
+            StacksHandlerUtil.shrinkItem(itemHandler, 0, 1, transaction);
         }
 
         progress++;

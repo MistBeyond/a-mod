@@ -3,7 +3,7 @@ import org.slf4j.event.Level
 plugins {
     `java-library`
     `maven-publish`
-    id("net.neoforged.moddev").version("2.0.141")
+    id("net.neoforged.moddev") version ("2.0.141")
     idea
     id("io.freefair.lombok") version "9.2.0"
     kotlin("jvm")
@@ -193,9 +193,9 @@ dependencies {
     "datagenImplementation"(kotlin("stdlib"))
 
     // JEI
-    compileOnly("mezz.jei:jei-${minecraftVersion}-common-api:$jeiVersion")
-    compileOnly("mezz.jei:jei-${minecraftVersion}-neoforge-api:$jeiVersion")
-    localRuntime("mezz.jei:jei-${minecraftVersion}-neoforge:$jeiVersion")
+    compileOnly("mezz.jei:jei-$minecraftVersion-common-api:$jeiVersion")
+    compileOnly("mezz.jei:jei-$minecraftVersion-neoforge-api:$jeiVersion")
+    localRuntime("mezz.jei:jei-$minecraftVersion-neoforge:$jeiVersion")
 
     // Jade
     compileOnly("maven.modrinth:jade:$jadeVersion")
