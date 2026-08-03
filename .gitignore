@@ -39,8 +39,13 @@ run/
 repo/
 !**/src/**/repo/
 
-external_source/
+### AI ###
+.codex/
+.opencode/
 .claude/
+opencode.json
+
+external_source/
 .kotlin/
 /logs/
 diff.txt

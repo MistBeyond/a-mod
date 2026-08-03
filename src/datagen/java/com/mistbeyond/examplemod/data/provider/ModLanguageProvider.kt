@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "LombokKotlinCompilerPlugin")
 
 package com.mistbeyond.examplemod.data.provider
 
@@ -52,7 +52,6 @@ class ModLanguageProvider(output: PackOutput) : LanguageProvider(output, Ids.MOD
         add(cfgKey("logDirtBlock"), "Log Dirt Block")
         add(cfgKey("magicNumber"), "Magic Number")
         add(cfgKey("magicNumberIntroduction"), "Magic Number Text")
-        add(cfgKey("allow"), "Magic Number Text")
         add(cfgKey("allowEnergyConversion"), "Allow Energy Conversion")
     }
 

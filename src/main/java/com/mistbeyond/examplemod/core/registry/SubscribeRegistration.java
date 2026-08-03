@@ -1,7 +1,9 @@
 package com.mistbeyond.examplemod.core.registry;
 
-import com.mistbeyond.examplemod.core.registry.impl.BaseRegistration;
 import com.mistbeyond.examplemod.core.registry.impl.BlockRegistration;
+import com.mistbeyond.examplemod.core.registry.impl.ContainerScreenRegistration;
+import com.mistbeyond.examplemod.core.registry.impl.ItemRegistration;
+import com.mistbeyond.examplemod.core.registry.impl.MenuTypeRegistration;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,7 +11,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The annotated method must be static, and its only parameter must be an {@link BaseRegistration} implementation, such as {@link BlockRegistration}.
+ * The annotated method must be static, and its only parameter must be a registration receiver,
+ * such as {@link BlockRegistration}, {@link ItemRegistration}, {@link MenuTypeRegistration} or {@link ContainerScreenRegistration}.
  * <p>
  * Then, you can register objects, like blocks:
  * <pre>{@code

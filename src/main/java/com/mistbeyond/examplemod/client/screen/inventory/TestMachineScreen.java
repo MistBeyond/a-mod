@@ -1,18 +1,18 @@
 package com.mistbeyond.examplemod.client.screen.inventory;
 
 import com.mistbeyond.examplemod.Ids;
-import com.mistbeyond.examplemod.core.registry.ProvideFactory;
 import com.mistbeyond.examplemod.core.registry.RegisterContainerScreen;
+import com.mistbeyond.examplemod.core.registry.SubscribeRegistration;
+import com.mistbeyond.examplemod.core.registry.impl.ContainerScreenRegistration;
 import com.mistbeyond.examplemod.inventory.TestMachineMenu;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-@RegisterContainerScreen(Ids.TEST_MACHINE)
+@RegisterContainerScreen
 public class TestMachineScreen extends AbstractContainerScreen<TestMachineMenu> {
     private static final Identifier BACKGROUND_ID = Identifier.withDefaultNamespace("textures/gui/container/furnace.png");
     private static final Identifier LIT_SPRITE = Identifier.withDefaultNamespace("container/furnace/lit_progress");
@@ -22,9 +22,9 @@ public class TestMachineScreen extends AbstractContainerScreen<TestMachineMenu> 
         super(menu, inventory, title);
     }
 
-    @ProvideFactory
-    private static MenuScreens.ScreenConstructor<TestMachineMenu, TestMachineScreen> provideFactory() {
-        return TestMachineScreen::new;
+    @SubscribeRegistration
+    private static void registerTestMachineScreen(ContainerScreenRegistration registration) {
+        registration.register(Ids.TEST_MACHINE, TestMachineScreen::new);
     }
 
     @Override

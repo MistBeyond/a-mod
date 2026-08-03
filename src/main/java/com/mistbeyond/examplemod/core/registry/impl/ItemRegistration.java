@@ -21,6 +21,8 @@ public final class ItemRegistration extends BaseRegistration<Item, Item.Properti
 
     @Override
     public void register(String name, Function<Item.Properties, Item> func, UnaryOperator<Item.Properties> properties) {
-        modRegistry.put(ID(name), gameRegistry.registerItem(name, func, properties));
+        if (modRegistry.put(ID(name), gameRegistry.registerItem(name, func, properties)) != null) {
+            throw new IllegalStateException("Item '" + name + "' was registered twice.");
+        }
     }
 }

@@ -46,7 +46,7 @@ public class LongBasicHandler implements EnergyHandler, ValueIOSerializable {
 
     public long insert(long amount, TransactionContext transaction) {
         Util.checkNonNegative(amount);
-        long inserted = Math.min(amount, capacity - amount);
+        long inserted = Math.min(amount, capacity - energy);
         if (inserted > 0) {
             energyJournal.updateSnapshots(transaction);
             energy += inserted;

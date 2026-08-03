@@ -6,6 +6,7 @@ import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import com.mistbeyond.examplemod.core.VoltageTier;
 import com.mistbeyond.examplemod.core.logistic.energy.*;
+import com.mistbeyond.examplemod.util.Util;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMaps;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
@@ -13,7 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import org.apache.commons.lang3.NotImplementedException;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jetbrains.annotations.UnmodifiableView;
 
@@ -21,17 +23,12 @@ import java.util.*;
 
 @Slf4j
 public class EnergyNetwork implements IEnergyNetwork {
-    private static final Direction[] DIRECTIONS = Direction.values();
     private final ServerLevel level;
     private final MutableGraph<IEnergyComponent> componentGraph = GraphBuilder.undirected().build();
     private final Cache cache = Cache.newEmpty();
 
     public EnergyNetwork(ServerLevel level) {
         this.level = level;
-    }
-
-    private static void notImplemented() {
-        throw new NotImplementedException("Not implemented");
     }
 
     @Override
@@ -50,13 +47,63 @@ public class EnergyNetwork implements IEnergyNetwork {
     }
 
     @Override
-    public void requestEnergy(IEnergyConsumer energyConsumer, EUTransferInfo info) {
-        notImplemented();
+    public EUTransferInfo pullEnergy(IEnergyConsumer consumer, EUTransferInfo info, TransactionContext transaction) {
+        long requested = info.power();
+        if (requested <= 0) {
+            return EUTransferInfo.ZERO;
+        }
+        List<GeneratorRoute> routes = cache.energyNetworkView.get(consumer);
+        if (routes.isEmpty()) {
+            return EUTransferInfo.ZERO;
+        }
+        try (Transaction actualTransaction = Transaction.open(transaction)) {
+            for (GeneratorRoute route : routes) {
+                IEnergyGenerator generator = route.generator();
+                long voltage = generator.getGeneratorVoltageTier().value;
+                if (voltage <= 0) {
+                    continue;
+                }
+                long loss = lineLoss(route.totalResistance(), requested / voltage);
+                long supply = saturatedAdd(requested, loss);
+                long delivered;
+                EUTransferInfo accepted;
+                try (Transaction routeTransaction = Transaction.open(actualTransaction)) {
+                    if (generator.extractEnergy(supply, routeTransaction).power() != supply) {
+                        // This generator cannot cover the whole request; fall through to the next route.
+                        continue;
+                    }
+                    delivered = supply - loss;
+                    accepted = consumer.insertEU(
+                            EUTransferInfo.power(generator.getGeneratorVoltageTier(), delivered),
+                            routeTransaction
+                    );
+                    if (accepted.power() != delivered) {
+                        // The consumer did not accept the whole delivery; try the next route.
+                        continue;
+                    }
+                    routeTransaction.commit();
+                }
+                EUTransferInfo wireLoad = EUTransferInfo.power(generator.getGeneratorVoltageTier(), supply);
+                for (IWire wire : route.path()) {
+                    wire.applyElectricLoad(wireLoad);
+                }
+                actualTransaction.commit();
+                return accepted;
+            }
+        }
+        return EUTransferInfo.ZERO;
     }
 
-    @Override
-    public void cancelRequestEnergy(IEnergyConsumer energyConsumer, EUTransferInfo info) {
-        notImplemented();
+    /**
+     * Line loss on a route for one tick: {@code resistance * current^2}, saturated.
+     */
+    private static long lineLoss(long totalResistance, long current) {
+        return Util.saturatedPositiveMultiply(totalResistance, Util.saturatedPositiveMultiply(current, current));
+    }
+
+    private static long saturatedAdd(long a, long b) {
+        long sum = a + b;
+        return sum < 0 ? Long.MAX_VALUE : sum;
     }
 
     @Override
@@ -71,9 +118,55 @@ public class EnergyNetwork implements IEnergyNetwork {
 
     @Override
     public void removeComponent(IEnergyComponent component) {
-        if (componentGraph.removeNode(component)) {
-            onComponentModified();
+        if (!componentGraph.removeNode(component)) {
+            return;
         }
+        List<Set<IEnergyComponent>> parts = connectedComponents();
+        if (parts.size() > 1) {
+            Set<IEnergyComponent> kept = parts.getFirst();
+            for (IEnergyComponent node : Set.copyOf(componentGraph.nodes())) {
+                if (!kept.contains(node)) {
+                    componentGraph.removeNode(node);
+                }
+            }
+            for (int i = 1; i < parts.size(); i++) {
+                EnergyNetwork split = new EnergyNetwork(level);
+                parts.get(i).forEach(c -> split.addComponent(c, true));
+                split.onComponentModified();
+                EnergyNetworkManager.INSTANCE.register(split);
+            }
+        }
+        onComponentModified();
+        if (componentGraph.nodes().isEmpty()) {
+            EnergyNetworkManager.INSTANCE.unregister(this);
+        }
+    }
+
+    /**
+     * Splits the remaining graph nodes into connected components (BFS).
+     */
+    private List<Set<IEnergyComponent>> connectedComponents() {
+        Set<IEnergyComponent> remaining = new HashSet<>(componentGraph.nodes());
+        List<Set<IEnergyComponent>> parts = new ArrayList<>();
+        while (!remaining.isEmpty()) {
+            IEnergyComponent start = remaining.iterator().next();
+            Set<IEnergyComponent> part = new HashSet<>();
+            ArrayDeque<IEnergyComponent> visiting = new ArrayDeque<>();
+            remaining.remove(start);
+            part.add(start);
+            visiting.addLast(start);
+            while (!visiting.isEmpty()) {
+                IEnergyComponent curr = visiting.removeFirst();
+                for (IEnergyComponent adjacent : componentGraph.adjacentNodes(curr)) {
+                    if (remaining.remove(adjacent)) {
+                        part.add(adjacent);
+                        visiting.addLast(adjacent);
+                    }
+                }
+            }
+            parts.add(part);
+        }
+        return parts;
     }
 
     @Override
@@ -113,9 +206,9 @@ public class EnergyNetwork implements IEnergyNetwork {
         Set.copyOf(componentGraph.adjacentNodes(component))
                 .forEach(node -> componentGraph.removeEdge(node, component));
 
-        for (IEnergyComponent c : cache.adjacentComponentView.get(component)) {
-            if (c.isConnectWith(component)) {
-                componentGraph.putEdge(component, c);
+        for (IEnergyComponent other : componentGraph.nodes()) {
+            if (other != component && other.isConnectWith(component)) {
+                componentGraph.putEdge(component, other);
             }
         }
 
@@ -145,7 +238,7 @@ public class EnergyNetwork implements IEnergyNetwork {
         }
 
         @Override
-        public EUTransferInfo insertEU() {
+        public EUTransferInfo insertEU(EUTransferInfo info, TransactionContext transaction) {
             notSupport();
             return null;
         }
@@ -198,34 +291,23 @@ public class EnergyNetwork implements IEnergyNetwork {
     private static class Cache {
         private @UnmodifiableView Set<IEnergyGenerator> generatorView;
         private @UnmodifiableView Set<IEnergyConsumer> consumerView;
-        private @UnmodifiableView Set<IWire> wireView;
         private @UnmodifiableView ListMultimap<IEnergyConsumer, GeneratorRoute> energyNetworkView;
-        private @UnmodifiableView Multimap<IEnergyComponent, IEnergyComponent> adjacentComponentView;
         private @UnmodifiableView Long2ReferenceMap<IEnergyComponent> pos2ComponentView;
         private HashSet<IEnergyGenerator> generators;
         private HashSet<IEnergyConsumer> consumers;
-        private HashSet<IWire> wires;
         private ListMultimap<IEnergyConsumer, GeneratorRoute> energyNetwork;
-        private HashMultimap<IEnergyComponent, IEnergyComponent> adjacentComponent;
         private Long2ReferenceMap<IEnergyComponent> pos2Component;
 
-        private HashMultimap<IEnergyGenerator, GeneratorRoute> generator2Route;
-        private HashMultimap<IWire, GeneratorRoute> wire2Route;
-
-        private Cache(HashSet<IEnergyGenerator> generators, HashSet<IEnergyConsumer> consumers, HashSet<IWire> wires, ListMultimap<IEnergyConsumer, GeneratorRoute> energyNetwork, HashMultimap<IEnergyComponent, IEnergyComponent> adjacentComponent, Long2ReferenceOpenHashMap<IEnergyComponent> pos2Component, HashMultimap<IEnergyGenerator, GeneratorRoute> generator2Route, HashMultimap<IWire, GeneratorRoute> wire2Route) {
+        private Cache(HashSet<IEnergyGenerator> generators, HashSet<IEnergyConsumer> consumers, ListMultimap<IEnergyConsumer, GeneratorRoute> energyNetwork, Long2ReferenceOpenHashMap<IEnergyComponent> pos2Component) {
             this.generators = generators;
             this.consumers = consumers;
-            this.wires = wires;
             this.energyNetwork = energyNetwork;
-            this.adjacentComponent = adjacentComponent;
             this.pos2Component = pos2Component;
-            this.generator2Route = generator2Route;
-            this.wire2Route = wire2Route;
             rebuildAllViews();
         }
 
         public static Cache newEmpty() {
-            return new Cache(new HashSet<>(), new HashSet<>(), new HashSet<>(), MultimapBuilder.hashKeys().arrayListValues().build(), HashMultimap.create(), new Long2ReferenceOpenHashMap<>(), HashMultimap.create(), HashMultimap.create());
+            return new Cache(new HashSet<>(), new HashSet<>(), MultimapBuilder.hashKeys().arrayListValues().build(), new Long2ReferenceOpenHashMap<>());
         }
 
         private static void minimalResistances(final ListMultimap<IEnergyConsumer, GeneratorRoute> routes) {
@@ -256,86 +338,46 @@ public class EnergyNetwork implements IEnergyNetwork {
                     // definitely safe
                     return new GeneratorRoute((IEnergyGenerator) curr, totalResistance, path.reversed());
                 }
-                // safe
-                IWire w = (IWire) father;
-                path.add(w);
-                totalResistance += w.getResistance();
+                // Only wires are intermediate nodes on a route; the terminal generator is not a wire.
+                if (father instanceof IWire wire) {
+                    path.add(wire);
+                    totalResistance += wire.getResistance();
+                }
                 curr = father;
             }
         }
 
         // todo: Incremental Update
         public void updateFully(Graph<IEnergyComponent> graph) {
-            var nodes = graph.nodes();
-            adjacentComponent = HashMultimap.create(nodes.size(), 2);
-
-
             updateComponents(graph);
-            for (IEnergyComponent node : nodes) {
-                for (Direction d : DIRECTIONS) {
-                    long pos = node.getPos().relative(d).asLong();
-                    if (pos2Component.containsKey(pos)) {
-                        adjacentComponent.put(node, pos2Component.get(pos));
-                    }
-                }
-            }
             updateNetwork(graph, generators);
             minimalResistances(energyNetwork);
         }
 
         /**
-         * Update the cache, except {@link Cache#adjacentComponent}
+         * Updates the component collections and position index.
          */
         public void updateComponents(Graph<IEnergyComponent> graph) {
             var nodes = graph.nodes();
             pos2Component = new Long2ReferenceOpenHashMap<>(nodes.size());
             generators = new HashSet<>();
             consumers = new HashSet<>();
-            wires = new HashSet<>();
 
             for (IEnergyComponent node : nodes) {
                 if (node instanceof IEnergyGenerator g) generators.add(g);
                 if (node instanceof IEnergyConsumer c) consumers.add(c);
-                if (node instanceof IWire w) wires.add(w);
                 pos2Component.put(node.getPos().asLong(), node);
             }
 
             generatorView = Collections.unmodifiableSet(generators);
             consumerView = Collections.unmodifiableSet(consumers);
-            wireView = Collections.unmodifiableSet(wires);
             pos2ComponentView = Long2ReferenceMaps.unmodifiable(pos2Component);
-        }
-
-        public @UnmodifiableView Set<IEnergyGenerator> getGenerators() {
-            return generatorView;
-        }
-
-        public @UnmodifiableView Set<IEnergyConsumer> getConsumers() {
-            return consumerView;
-        }
-
-        public @UnmodifiableView Set<IWire> getWires() {
-            return wireView;
-        }
-
-        public @UnmodifiableView ListMultimap<IEnergyConsumer, GeneratorRoute> getEnergyNetwork() {
-            return energyNetworkView;
-        }
-
-        public @UnmodifiableView Multimap<IEnergyComponent, IEnergyComponent> getAdjacentComponent() {
-            return adjacentComponentView;
-        }
-
-        public @UnmodifiableView Long2ReferenceMap<IEnergyComponent> getPos2Component() {
-            return pos2ComponentView;
         }
 
         private void rebuildAllViews() {
             generatorView = Collections.unmodifiableSet(generators);
             consumerView = Collections.unmodifiableSet(consumers);
-            wireView = Collections.unmodifiableSet(wires);
             energyNetworkView = Multimaps.unmodifiableListMultimap(energyNetwork);
-            adjacentComponentView = Multimaps.unmodifiableMultimap(adjacentComponent);
             pos2ComponentView = Long2ReferenceMaps.unmodifiable(pos2Component);
         }
 

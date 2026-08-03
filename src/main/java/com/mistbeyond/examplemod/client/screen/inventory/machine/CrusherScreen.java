@@ -1,18 +1,18 @@
 package com.mistbeyond.examplemod.client.screen.inventory.machine;
 
 import com.mistbeyond.examplemod.Ids;
-import com.mistbeyond.examplemod.core.registry.ProvideFactory;
 import com.mistbeyond.examplemod.core.registry.RegisterContainerScreen;
+import com.mistbeyond.examplemod.core.registry.SubscribeRegistration;
+import com.mistbeyond.examplemod.core.registry.impl.ContainerScreenRegistration;
 import com.mistbeyond.examplemod.inventory.machine.CrusherMenu;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-@RegisterContainerScreen(Ids.CRUSHER)
+@RegisterContainerScreen
 public class CrusherScreen extends AbstractContainerScreen<CrusherMenu> {
     private static final Identifier BACKGROUND = Ids.thisMod("textures/gui/machine/machine.png");
     private static final Identifier ENERGY_SPRITE = Ids.thisMod("machine/energy_full");
@@ -22,9 +22,9 @@ public class CrusherScreen extends AbstractContainerScreen<CrusherMenu> {
         super(menu, inventory, title);
     }
 
-    @ProvideFactory
-    public static MenuScreens.ScreenConstructor<CrusherMenu, CrusherScreen> provideFactory() {
-        return CrusherScreen::new;
+    @SubscribeRegistration
+    private static void registerCrusherScreen(ContainerScreenRegistration registration) {
+        registration.register(Ids.CRUSHER, CrusherScreen::new);
     }
 
     @Override

@@ -20,4 +20,22 @@ public interface IEnergyNetworkManager {
      * @return merged network
      */
     IEnergyNetwork mergeNetwork(ServerLevel level, BlockPos where);
+
+    /**
+     * Called by an energy component when it is loaded into a server level, e.g. from
+     * {@code BlockEntity#onLoad()}. The merge is deferred to the next server tick, because
+     * level interactions during chunk loading may deadlock the game.
+     *
+     * @param component the component that was loaded
+     */
+    void onComponentLoaded(IEnergyComponent component);
+
+    /**
+     * Called by an energy component when it is removed from a server level, e.g. from
+     * {@code BlockEntity#setRemoved()}. Removes the component from all networks it belongs to,
+     * splitting networks if necessary and unregistering empty ones.
+     *
+     * @param component the component that was removed
+     */
+    void onComponentRemoved(IEnergyComponent component);
 }

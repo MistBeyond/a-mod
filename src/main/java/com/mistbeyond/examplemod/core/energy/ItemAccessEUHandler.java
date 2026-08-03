@@ -42,40 +42,42 @@ public class ItemAccessEUHandler implements EUEnergyHandler, EnergyConversionPer
         return item instanceof ElectricItem;
     }
 
-    private static long min(long a, long b, long c) {
-        return Math.min(Math.min(a, b), c);
-    }
-
     @Override
     public long getEUCapacity() {
-        return chargeInfo.capacity();
+        return Util.saturatedPositiveMultiply(chargeInfo.capacity(), access.getAmount());
     }
 
     @Override
     public long getEUAmount() {
-        return limitedRead(access.getResource());
+        return Util.saturatedPositiveMultiply(limitedRead(access.getResource()), access.getAmount());
     }
 
+    /**
+     * The ENERGY component is stored per item, shared by a whole stack, so the stored value stays integral.
+     * The requested total is floored to a multiple of the stack size, and the actual inserted total is returned.
+     */
     @Override
     public long insertEU(long amount, TransactionContext transaction) {
         Util.checkNonNegative(amount);
-        var oldResource = access.getResource();
-        if (access.getAmount() == 0) {
+        int stackSize = access.getAmount();
+        if (stackSize == 0) {
             return 0;
         }
-        // todo: support more amount
-        if (access.getAmount() != 1) {
-            throw new UnsupportedOperationException(String.format("Invalid item amount for EU transfer: %s", access.getAmount()));
-        }
-        if (oldResource.getItem() != validItem) {
+        long amountPerItem = Math.min(maxTransfer, amount / stackSize);
+        if (amountPerItem == 0) {
             return 0;
         }
 
+        var oldResource = access.getResource();
+        if (oldResource.getItem() != validItem) {
+            return 0;
+        }
         long oldEnergy = limitedRead(oldResource);
-        long inserted = min(chargeInfo.capacity() - oldEnergy, maxTransfer, amount);
-        if (inserted > 0) {
-            access.exchange(update(oldResource, oldEnergy + inserted), access.getAmount(), transaction);
-            return inserted;
+
+        long insertedPerItem = Math.min(amountPerItem, chargeInfo.capacity() - oldEnergy);
+        if (insertedPerItem > 0) {
+            int exchanged = access.exchange(update(oldResource, oldEnergy + insertedPerItem), stackSize, transaction);
+            return insertedPerItem * exchanged;
         }
         return 0;
     }
@@ -83,22 +85,23 @@ public class ItemAccessEUHandler implements EUEnergyHandler, EnergyConversionPer
     @Override
     public long extractEU(long amount, TransactionContext transaction) {
         Util.checkNonNegative(amount);
-        var oldResource = access.getResource();
-        if (access.getAmount() == 0) {
+        int stackSize = access.getAmount();
+        if (stackSize == 0) {
             return 0;
         }
-        if (access.getAmount() != 1) {
-            throw new UnsupportedOperationException(String.format("Invalid item amount for EU transfer: %s", access.getAmount()));
-        }
-        if (oldResource.getItem() != validItem) {
+        long amountPerItem = Math.min(maxTransfer, amount / stackSize);
+        if (amountPerItem == 0) {
             return 0;
         }
 
+        var oldResource = access.getResource();
+        // 0 for a different item, so no extraction happens
         long oldEnergy = limitedRead(oldResource);
-        long extracted = min(oldEnergy, maxTransfer, amount);
-        if (extracted > 0) {
-            access.exchange(update(oldResource, oldEnergy - extracted), access.getAmount(), transaction);
-            return extracted;
+
+        long extractedPerItem = Math.min(amountPerItem, oldEnergy);
+        if (extractedPerItem > 0) {
+            int exchanged = access.exchange(update(oldResource, oldEnergy - extractedPerItem), stackSize, transaction);
+            return extractedPerItem * exchanged;
         }
         return 0;
     }
@@ -123,16 +126,13 @@ public class ItemAccessEUHandler implements EUEnergyHandler, EnergyConversionPer
         return EUTransferInfo.power(outputVoltage, extractEU(power, transaction));
     }
 
+    /**
+     * Backdoor that directly sets the per-item energy. It is not transactional and must not be used inside a transaction.
+     */
     @Override
     public void set(long amount) {
-        if (access.getAmount() == 0) {
-            return;
-        }
-        if (access.getAmount() != 1) {
-            throw new UnsupportedOperationException(String.format("Invalid item amount for EU transfer: %s", access.getAmount()));
-        }
         var old = access.getResource();
-        if (old.getItem() != validItem) {
+        if (access.getAmount() == 0 || old.getItem() != validItem) {
             return;
         }
         access.exchange(update(old, amount), access.getAmount(), null);

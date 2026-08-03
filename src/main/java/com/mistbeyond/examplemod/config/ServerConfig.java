@@ -11,6 +11,8 @@ public final class ServerConfig {
     private ServerConfig(ModConfigSpec.Builder builder) {
         allowEnergyConversion = builder
                 .comment("Allows conversion between FE and custom unit(EU).")
+                .worldRestart()
+                .translation("examplemod.configuration.allowEnergyConversion")
                 .define("allowEnergyConversion", false);
     }
 

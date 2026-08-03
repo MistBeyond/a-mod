@@ -39,8 +39,8 @@ public class SimpleEUHandler implements EUEnergyHandler, EnergyConversionPermiss
         this.maxCurrentOutput = maxCurrentOutput;
         this.voltageTier = voltageTier;
         long voltage = voltageTier.value;
-        this.maxInsert = Math.multiplyExact(voltage, maxCurrentInput);
-        this.maxExtract = Math.multiplyExact(voltage, maxCurrentOutput);
+        this.maxInsert = Util.saturatedPositiveMultiply(voltage, maxCurrentInput);
+        this.maxExtract = Util.saturatedPositiveMultiply(voltage, maxCurrentOutput);
         this.energy = energy;
         this.capacity = capacity;
     }
@@ -83,7 +83,7 @@ public class SimpleEUHandler implements EUEnergyHandler, EnergyConversionPermiss
     public EUTransferInfo insertWith(VoltageTier voltageTier, long power, TransactionContext transaction) {
         Util.checkNonNegative(power);
         var inputVoltage = VoltageTier.min(this.voltageTier, voltageTier);
-        var max = inputVoltage.calculatePower(maxCurrentOutput);
+        var max = inputVoltage.calculatePower(maxCurrentInput);
         power = Math.min(power, max);
         return EUTransferInfo.power(inputVoltage, insertEU(power, transaction));
     }

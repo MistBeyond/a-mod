@@ -17,7 +17,6 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
@@ -124,7 +123,6 @@ public abstract class CommonRegistrar {
      * Unsafe cast.
      * Invoker should ensure the correct registry-type relation.
      */
-    @ApiStatus.Internal
     public final <T extends Block> T blockTyped(String id) {
         return typed(block(id));
     }
@@ -133,7 +131,6 @@ public abstract class CommonRegistrar {
      * Unsafe cast.
      * Invoker should ensure the correct registry-type relation.
      */
-    @ApiStatus.Internal
     public final <T extends Item> T itemTyped(String id) {
         return typed(item(id));
     }
@@ -142,7 +139,6 @@ public abstract class CommonRegistrar {
      * Unsafe cast.
      * Invoker should ensure the correct registry-type relation.
      */
-    @ApiStatus.Internal
     public final <T extends AbstractContainerMenu> MenuType<T> menuTyped(String id) {
         return typed(menuType(id));
     }
@@ -151,7 +147,6 @@ public abstract class CommonRegistrar {
      * Unsafe cast.
      * Invoker should ensure the correct registry-type relation.
      */
-    @ApiStatus.Internal
     public final <T extends BlockEntity> BlockEntityType<T> blockEntityTyped(String id) {
         return typed(blockEntityType(id));
     }

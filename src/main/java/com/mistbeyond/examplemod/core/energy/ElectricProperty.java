@@ -1,6 +1,7 @@
 package com.mistbeyond.examplemod.core.energy;
 
 import com.mistbeyond.examplemod.core.VoltageTier;
+import com.mistbeyond.examplemod.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -31,11 +32,11 @@ public interface ElectricProperty {
     }
 
     static long power(ElectricProperty prop) {
-        return Math.multiplyExact(prop.voltage(), prop.current());
+        return Util.saturatedPositiveMultiply(prop.voltage(), prop.current());
     }
 
     static long totalEnergy(ElectricProperty prop) {
-        return Math.multiplyExact(power(prop), prop.duration());
+        return Util.saturatedPositiveMultiply(power(prop), prop.duration());
     }
 
     long voltage();

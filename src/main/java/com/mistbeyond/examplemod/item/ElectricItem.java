@@ -10,22 +10,28 @@ import net.minecraft.world.item.Item;
 /**
  * A zero energy {@link ModDataComponents#ENERGY component} is implicitly added to it.
  */
+@Getter
 public class ElectricItem extends Item implements ElectricProperty.Provider<ElectricItem.ChargeInfo> {
-    @Getter
     protected final ChargeInfo chargeInfo;
 
+    /**
+     * Whether this item is an infinite energy source, backed by {@link com.mistbeyond.examplemod.core.energy.InfiniteEUHandler}.
+     * {@link #getElectricProperty()} still returns a display property ({@link ChargeInfo#INFINITY}) for infinite items.
+     */
+    private final boolean infinite;
+
     public ElectricItem(Properties properties, VoltageTier ioVoltage) {
-        var chargeInfo = new ChargeInfo(ioVoltage, 1, 60 * 20);
-        this(properties, chargeInfo);
+        this(properties, new ChargeInfo(ioVoltage, 1, 60 * 20), false);
     }
 
-    private ElectricItem(Properties properties, ChargeInfo chargeInfo) {
+    private ElectricItem(Properties properties, ChargeInfo chargeInfo, boolean infinite) {
         super(properties.component(ModDataComponents.ENERGY.get(), 0L));
         this.chargeInfo = chargeInfo;
+        this.infinite = infinite;
     }
 
     public static ElectricItem createInfinite(Properties properties) {
-        return new ElectricItem(properties, ChargeInfo.INFINITY);
+        return new ElectricItem(properties, ChargeInfo.INFINITY, true);
     }
 
     @Override
@@ -43,17 +49,11 @@ public class ElectricItem extends Item implements ElectricProperty.Provider<Elec
         }
 
         public long maxPower() {
-            if (isInfinite()) return Long.MAX_VALUE;
             return ElectricProperty.power(this);
         }
 
         public long capacity() {
-            if (isInfinite()) return Long.MAX_VALUE;
             return ElectricProperty.totalEnergy(this);
-        }
-
-        public boolean isInfinite() {
-            return this == ChargeInfo.INFINITY;
         }
     }
 }

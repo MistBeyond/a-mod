@@ -2,8 +2,9 @@ package com.mistbeyond.examplemod.inventory.machine;
 
 import com.mistbeyond.examplemod.Ids;
 import com.mistbeyond.examplemod.Init;
-import com.mistbeyond.examplemod.core.registry.ProvideFactory;
 import com.mistbeyond.examplemod.core.registry.RegisterMenuType;
+import com.mistbeyond.examplemod.core.registry.SubscribeRegistration;
+import com.mistbeyond.examplemod.core.registry.impl.MenuTypeRegistration;
 import com.mistbeyond.examplemod.inventory.BatterySlot;
 import com.mistbeyond.examplemod.recipe.RecipeTypes;
 import com.mistbeyond.examplemod.util.RecipeUtil;
@@ -17,7 +18,7 @@ import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 import org.jetbrains.annotations.Range;
 
-@RegisterMenuType(Ids.CRUSHER)
+@RegisterMenuType
 public class CrusherMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final Inventory inventory;
@@ -45,9 +46,9 @@ public class CrusherMenu extends AbstractContainerMenu {
         addStandardInventorySlots(inventory, 8, 84);
     }
 
-    @ProvideFactory
-    private static MenuType.MenuSupplier<?> provideFactory() {
-        return CrusherMenu::new;
+    @SubscribeRegistration
+    private static void registerCrusherMenu(MenuTypeRegistration registration) {
+        registration.register(Ids.CRUSHER, CrusherMenu::new);
     }
 
     @Override

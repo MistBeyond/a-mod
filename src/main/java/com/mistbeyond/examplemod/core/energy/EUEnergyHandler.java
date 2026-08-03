@@ -1,6 +1,5 @@
 package com.mistbeyond.examplemod.core.energy;
 
-import com.mistbeyond.examplemod.core.Values;
 import com.mistbeyond.examplemod.core.VoltageTier;
 import com.mistbeyond.examplemod.core.logistic.energy.EUTransferInfo;
 import com.mistbeyond.examplemod.item.ElectricItem;
@@ -30,7 +29,7 @@ public interface EUEnergyHandler extends EnergyHandler, VoltageTierLimited {
         var item = access.getResource().getItem();
         if (item instanceof ElectricItem electricItem) {
             var chargeInfo = electricItem.getElectricProperty();
-            if (chargeInfo.isInfinite()) {
+            if (electricItem.isInfinite()) {
                 return InfiniteEUHandler.INSTANCE;
             }
             return new ItemAccessEUHandler(access, chargeInfo);
@@ -124,7 +123,7 @@ public interface EUEnergyHandler extends EnergyHandler, VoltageTierLimited {
     @Override
     default int insert(int amount, TransactionContext transaction) {
         Util.checkNonNegative(amount);
-        return Math.toIntExact(insertEU((long) amount / Values.TO_FE, transaction));
+        return EnergyUtil.saturatingToIntFE(insertEU(EnergyUtil.toEU(amount), transaction));
     }
 
     /**
@@ -136,6 +135,6 @@ public interface EUEnergyHandler extends EnergyHandler, VoltageTierLimited {
     @Override
     default int extract(int amount, TransactionContext transaction) {
         Util.checkNonNegative(amount);
-        return Math.toIntExact(extractEU((long) amount / Values.TO_FE, transaction) * Values.TO_FE);
+        return EnergyUtil.saturatingToIntFE(extractEU(EnergyUtil.toEU(amount), transaction));
     }
 }

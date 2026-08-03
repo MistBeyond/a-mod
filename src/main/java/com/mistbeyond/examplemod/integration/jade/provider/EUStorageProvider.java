@@ -12,7 +12,10 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
-import snownee.jade.api.*;
+import snownee.jade.api.BlockAccessor;
+import snownee.jade.api.IBlockComponentProvider;
+import snownee.jade.api.ITooltip;
+import snownee.jade.api.StreamServerDataProvider;
 import snownee.jade.api.config.IPluginConfig;
 import snownee.jade.api.ui.BoxStyle;
 import snownee.jade.api.ui.Element;
@@ -20,39 +23,36 @@ import snownee.jade.api.ui.IDisplayHelper;
 import snownee.jade.api.ui.JadeUI;
 import snownee.jade.api.view.ProgressView;
 
-public abstract class EUStorageProvider<T extends Accessor<?>> implements StreamServerDataProvider<T, EUStorageProvider.Data> {
-    public static final EUStorageProvider<BlockAccessor> BLOCK = new EUStorageProvider<>() {
-        @Override
-        public Data streamData(BlockAccessor accessor) {
-            return provideData(accessor);
-        }
+public class EUStorageProvider implements StreamServerDataProvider<BlockAccessor, EUStorageProvider.Data> {
+    public static final EUStorageProvider INSTANCE = new EUStorageProvider();
 
-        private <M extends BlockEntity & ElectricMachine> Data provideData(BlockAccessor accessor) {
-            EUEnergyHandler handler = accessor.<M>typedBlockEntity().getEnergyHandler();
-            var voltageHint = handler.getVoltageTier().asString();
-            return new Data(handler.getEUCapacity(), handler.getEUAmount(), handler.getVoltageTier().value, voltageHint);
-        }
-    };
-
-    @Override
-    public Identifier getUid() {
-        return ModJadeIds.EU_STORAGE;
+    private static <M extends BlockEntity & ElectricMachine> M typedElectricMachine(BlockAccessor accessor) {
+        return accessor.typedBlockEntity();
     }
 
     @Override
-    public abstract @Nullable Data streamData(T accessor);
+    public @Nullable Data streamData(BlockAccessor accessor) {
+        EUEnergyHandler handler = typedElectricMachine(accessor).getEnergyHandler();
+        var voltageHint = handler.getVoltageTier().asString();
+        return new Data(handler.getEUCapacity(), handler.getEUAmount(), handler.getVoltageTier().value, voltageHint);
+    }
 
     @Override
     public StreamCodec<RegistryFriendlyByteBuf, Data> streamCodec() {
         return Data.STREAM_CODEC;
     }
 
-    public static class Client<T extends Accessor<?>> implements IComponentProvider<T> {
-        public static final Client<BlockAccessor> BLOCK = new Client<>();
+    @Override
+    public Identifier getUid() {
+        return ModJadeIds.EU_STORAGE;
+    }
+
+    public static class Client implements IBlockComponentProvider {
+        public static final Client INSTANCE = new Client();
         public static final Element PROGRESS_OVERLAY = JadeUI.horizontalTiledSprite(RenderPipelines.GUI_TEXTURED, Ids.thisMod("energy_progress"), 16, 16);
 
         @Override
-        public void appendTooltip(ITooltip tooltip, T accessor, IPluginConfig config) {
+        public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
             var tags = accessor.getServerData().get(ModJadeIds.EU_STORAGE.toString());
             if (tags == null) {
                 return;

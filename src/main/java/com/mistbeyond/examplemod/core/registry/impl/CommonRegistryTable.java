@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
@@ -19,14 +18,26 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforgespi.language.ModFileScanData;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.NoSuchElementException;
 
-// todo:refactor the whole system in the future
 @Slf4j
 public class CommonRegistryTable extends CommonRegistrar {
+    /**
+     * Packages that must be excluded from the runtime check, since they are checked elsewhere or side-specific.
+     */
+    private static final List<String> EXCLUDED_PACKAGES = List.of(
+            "com.mistbeyond.examplemod.earlycheck",
+            "com.mistbeyond.examplemod.data",
+            "com.mistbeyond.examplemod.integration");
+
     private final BlockRegistration blockRegistration;
     private final ItemRegistration itemRegistration;
+    private final MenuTypeRegistration menuTypeRegistration;
+    private final ContainerScreenRegistration containerScreenRegistration;
+    private final ExclusionPolicy exclusionPolicy = new ExclusionPolicy(EXCLUDED_PACKAGES);
 
     private boolean insensitiveProcessed = false;
     private boolean clientProcessed = false;
@@ -35,6 +46,8 @@ public class CommonRegistryTable extends CommonRegistrar {
         super(modId, blockRegister, itemRegister, blockEntityRegister, menuRegister);
         blockRegistration = new BlockRegistration(modId, block, blockRegister);
         itemRegistration = new ItemRegistration(modId, item, itemRegister);
+        menuTypeRegistration = new MenuTypeRegistration(modId, menuType, menuRegister);
+        containerScreenRegistration = new ContainerScreenRegistration(modId, containerScreen);
     }
 
     /**
@@ -47,6 +60,27 @@ public class CommonRegistryTable extends CommonRegistrar {
     private static <F> F getFactory(Class<?> clazz) throws NoSuchElementException {
         try {
             return (F) ReflectHelper.getFirstAnnotatedStaticMethod(clazz, ProvideFactory.class).invoke(null);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Resolves every class annotated with {@code annotation} and invokes its unique
+     * {@link SubscribeRegistration} static method with {@code receiver}.
+     */
+    private static <T, R> void invokeRegistration(ModFileScanData scanResult, Class<? extends Annotation> annotation, Class<T> superclass, R receiver) {
+        for (var data : ScanDataHelper.annotationDataOf(scanResult, annotation)) {
+            invokeSubscribeRegistration(ScanDataHelper.resolveAndValidate(data, superclass), receiver);
+        }
+    }
+
+    /**
+     * Invokes the unique {@link SubscribeRegistration} static method of {@code clazz} with {@code receiver}.
+     */
+    private static void invokeSubscribeRegistration(Class<?> clazz, Object receiver) {
+        try {
+            ReflectHelper.getFirstAnnotatedStaticMethod(clazz, SubscribeRegistration.class).invoke(null, receiver);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new IllegalStateException(e);
         }
@@ -92,12 +126,9 @@ public class CommonRegistryTable extends CommonRegistrar {
                     .getFile()
                     .getScanResult();
             // check
-            checkClientOnly(new ClassContainer(NeoApiHelper.loadSideSensitiveClasses(scanResult, Dist.CLIENT)));
-            try {
-                processContainerScreen(scanResult);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e);
-            }
+            checkClientOnly(new ClassContainer(SideSifter.loadSensitive(scanResult, Dist.CLIENT, exclusionPolicy)));
+            processContainerScreen(scanResult);
+            validateClientFamilyConsistency();
             clientProcessed = true;
         }
     }
@@ -109,68 +140,79 @@ public class CommonRegistryTable extends CommonRegistrar {
                     .getFile()
                     .getScanResult();
             // check
-            checkInsensitive(new ClassContainer(NeoApiHelper.loadSideInsensitiveClasses(scanResult)));
-            try {
-                // no checks during processing
-                processBlock(scanResult);
-                processItem(scanResult);
-                processMenu(scanResult);
-                processBlockEntity(scanResult);
-            } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException e) {
-                throw new IllegalStateException(e);
-            }
+            checkInsensitive(new ClassContainer(SideSifter.loadInsensitive(scanResult, exclusionPolicy)));
+            // no checks during processing
+            processBlock(scanResult);
+            processItem(scanResult);
+            processMenu(scanResult);
+            processBlockEntity(scanResult);
+            validateCommonFamilyConsistency();
             insensitiveProcessed = true;
         }
     }
 
-
-    private void processBlock(ModFileScanData scanResult) throws ClassNotFoundException, InvocationTargetException, IllegalAccessException {
-        var annotationData = NeoApiHelper.getNeoAnnotationDataBy(scanResult, RegisterBlock.class);
-        for (var data : annotationData) {
-            var clazz = NeoApiHelper.resolveAndValidate(data, Block.class);
+    private void processBlock(ModFileScanData scanResult) {
+        for (var data : ScanDataHelper.annotationDataOf(scanResult, RegisterBlock.class)) {
+            var clazz = ScanDataHelper.resolveAndValidate(data, Block.class);
             var v = data.annotationData().get("registerBlockItem");
             blockRegistration.setAllowRegisteringBlockItem(v == null || (boolean) v);
-            ReflectHelper.getFirstAnnotatedStaticMethod(clazz, SubscribeRegistration.class).invoke(null, blockRegistration);
+            invokeSubscribeRegistration(clazz, blockRegistration);
         }
         blockRegistration.registerBlockItem(item, itemRegister);
     }
 
-    private void processItem(ModFileScanData scanResult) throws ClassNotFoundException, InvocationTargetException, IllegalAccessException {
-        var annotationData = NeoApiHelper.getNeoAnnotationDataBy(scanResult, RegisterItem.class);
-        for (var data : annotationData) {
-            var clazz = NeoApiHelper.resolveAndValidate(data, Item.class);
-            ReflectHelper.getFirstAnnotatedStaticMethod(clazz, SubscribeRegistration.class).invoke(null, itemRegistration);
-        }
+    private void processItem(ModFileScanData scanResult) {
+        invokeRegistration(scanResult, RegisterItem.class, Item.class, itemRegistration);
     }
 
-    private void processMenu(ModFileScanData scanResult) throws ClassNotFoundException {
-        var annotationData = NeoApiHelper.getNeoAnnotationDataBy(scanResult, RegisterMenuType.class);
-        for (var data : annotationData) {
-            var clazz = NeoApiHelper.resolveAndValidate(data, AbstractContainerMenu.class);
-            var name = (String) data.annotationData().get("value");
-            var id = Identifier.fromNamespaceAndPath(this.modId, name);
-            this.menuType.put(id, menuRegister.register(name, () -> new MenuType<>(getFactory(clazz), FeatureFlags.DEFAULT_FLAGS)));
-        }
+    private void processMenu(ModFileScanData scanResult) {
+        invokeRegistration(scanResult, RegisterMenuType.class, AbstractContainerMenu.class, menuTypeRegistration);
     }
 
-    private void processBlockEntity(ModFileScanData scanResult) throws ClassNotFoundException {
-        var annotationData = NeoApiHelper.getNeoAnnotationDataBy(scanResult, RegisterBlockEntityType.class);
-        for (var data : annotationData) {
-            var clazz = NeoApiHelper.resolveAndValidate(data, BlockEntity.class);
+    private void processBlockEntity(ModFileScanData scanResult) {
+        for (var data : ScanDataHelper.annotationDataOf(scanResult, RegisterBlockEntityType.class)) {
+            var clazz = ScanDataHelper.resolveAndValidate(data, BlockEntity.class);
             var name = (String) data.annotationData().get("value");
             var id = Identifier.fromNamespaceAndPath(this.modId, name);
+            if (this.blockEntityType.containsKey(id)) {
+                throw new IllegalStateException("BlockEntityType '" + name + "' was registered twice.");
+            }
             this.blockEntityType.put(id, blockEntityRegister.register(name, () -> new BlockEntityType<>(getFactory(clazz), block.get(id).value())));
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private <M extends AbstractContainerMenu, S extends AbstractContainerScreen<M>> void processContainerScreen(ModFileScanData scanResult) throws ClassNotFoundException {
-        var annotationData = NeoApiHelper.getNeoAnnotationDataBy(scanResult, RegisterContainerScreen.class);
-        for (var data : annotationData) {
-            var clazz = (Class<S>) NeoApiHelper.resolveAndValidate(data, AbstractContainerScreen.class);
-            var name = (String) data.annotationData().get("value");
-            var id = Identifier.fromNamespaceAndPath(this.modId, name);
-            this.containerScreen.put(id, getFactory(clazz));
+    private void processContainerScreen(ModFileScanData scanResult) {
+        invokeRegistration(scanResult, RegisterContainerScreen.class, AbstractContainerScreen.class, containerScreenRegistration);
+    }
+
+    /**
+     * Ensures every registered menu/block entity type id has a matching block registered under the same id.
+     */
+    private void validateCommonFamilyConsistency() {
+        var report = new CheckReport();
+        for (var id : menuType.keySet()) {
+            if (!block.containsKey(id)) {
+                report.addErrorMessage(String.format("MenuType '%s' has no matching Block registered.", id.getPath()));
+            }
         }
+        for (var id : blockEntityType.keySet()) {
+            if (!block.containsKey(id)) {
+                report.addErrorMessage(String.format("BlockEntityType '%s' has no matching Block registered.", id.getPath()));
+            }
+        }
+        report.throwIfFailed(log);
+    }
+
+    /**
+     * Ensures every registered container screen id has a matching menu type.
+     */
+    private void validateClientFamilyConsistency() {
+        var report = new CheckReport();
+        for (var id : containerScreen.keySet()) {
+            if (!menuType.containsKey(id)) {
+                report.addErrorMessage(String.format("ContainerScreen '%s' has no matching MenuType registered.", id.getPath()));
+            }
+        }
+        report.throwIfFailed(log);
     }
 }

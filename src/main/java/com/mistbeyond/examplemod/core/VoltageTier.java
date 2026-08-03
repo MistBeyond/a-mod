@@ -47,7 +47,7 @@ public enum VoltageTier {
 
     public long calculatePower(long current) {
         Util.checkNonNegative(current);
-        return Math.multiplyExact(this.value, current);
+        return Util.saturatedPositiveMultiply(this.value, current);
     }
 
     public Component asComponent() {

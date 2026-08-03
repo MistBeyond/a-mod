@@ -31,7 +31,9 @@ public final class BlockRegistration extends BaseRegistration<Block, BlockBehavi
     @Override
     public void register(String name, Function<BlockBehaviour.Properties, Block> func, UnaryOperator<BlockBehaviour.Properties> properties) {
         var b = gameRegistry.registerBlock(name, func, properties);
-        modRegistry.put(ID(name), b);
+        if (modRegistry.put(ID(name), b) != null) {
+            throw new IllegalStateException("Block '" + name + "' was registered twice.");
+        }
         if (allowRegisteringBlockItem) {
             blockItemEntryList.add(new BlockItemEntry(name, b));
         }
@@ -39,7 +41,9 @@ public final class BlockRegistration extends BaseRegistration<Block, BlockBehavi
 
     void registerBlockItem(HashMap<Identifier, DeferredItem<?>> modReg, DeferredRegister.Items gameReg) {
         for (BlockItemEntry entry : blockItemEntryList) {
-            modReg.put(ID(entry.name), gameReg.registerSimpleBlockItem(entry.name, entry.block));
+            if (modReg.put(ID(entry.name), gameReg.registerSimpleBlockItem(entry.name, entry.block)) != null) {
+                throw new IllegalStateException("Item '" + entry.name + "' was registered twice (block item).");
+            }
         }
         blockItemEntryList.clear();
     }

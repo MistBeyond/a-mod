@@ -20,16 +20,20 @@ public final class CommonConfig {
     private CommonConfig(ModConfigSpec.Builder builder) {
         logDirtBlock = builder
                 .comment("Whether to log the dirt block on common setup")
+                .translation("examplemod.configuration.logDirtBlock")
                 .define("logDirtBlock", true);
         magicNumber = builder
                 .comment("A magic number")
+                .translation("examplemod.configuration.magicNumber")
                 .defineInRange("magicNumber", 42, 0, Integer.MAX_VALUE);
         magicNumberIntroduction = builder
                 .comment("What you want the introduction message to be for the magic number")
+                .translation("examplemod.configuration.magicNumberIntroduction")
                 .define("magicNumberIntroduction", "The magic number is... ");
         itemStrings = builder
                 .comment("A list of items to log on common setup.")
-                .defineListAllowEmpty("items", List.of("minecraft:iron_ingot"), () -> "", CommonConfig::validateItemName);
+                .translation("examplemod.configuration.items")
+                .defineListAllowEmpty("items", List.of("minecraft:iron_ingot"), () -> "minecraft:iron_ingot", CommonConfig::validateItemName);
     }
 
     private static boolean validateItemName(final Object obj) {

@@ -1,13 +1,12 @@
 package com.mistbeyond.examplemod.core.registry.impl;
 
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
-
+/**
+ * Runs a registration check against a {@link ClassContainer} and reports failures to a {@link CheckReport}.
+ */
+@FunctionalInterface
 public interface Checker {
-    @CanIgnoreReturnValue
-    boolean inheritanceChainCheck(Class<?> clazz, CheckReport.Adder adder);
-
     /**
-     * Run check.
+     * Runs this checker.
      */
     void check();
 }

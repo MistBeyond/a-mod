@@ -2,8 +2,9 @@ package com.mistbeyond.examplemod.inventory;
 
 import com.mistbeyond.examplemod.Ids;
 import com.mistbeyond.examplemod.Init;
-import com.mistbeyond.examplemod.core.registry.ProvideFactory;
 import com.mistbeyond.examplemod.core.registry.RegisterMenuType;
+import com.mistbeyond.examplemod.core.registry.SubscribeRegistration;
+import com.mistbeyond.examplemod.core.registry.impl.MenuTypeRegistration;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -16,7 +17,7 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 
-@RegisterMenuType(Ids.TEST_MACHINE)
+@RegisterMenuType
 public class TestMachineMenu extends AbstractContainerMenu {
     public static final int INGREDIENT_SLOT = 0;
     public static final int FUEL_SLOT = 1;
@@ -55,9 +56,9 @@ public class TestMachineMenu extends AbstractContainerMenu {
         this.addDataSlots(containerData);
     }
 
-    @ProvideFactory
-    private static MenuType.MenuSupplier<?> provideFactory() {
-        return TestMachineMenu::new;
+    @SubscribeRegistration
+    private static void registerTestMachineMenu(MenuTypeRegistration registration) {
+        registration.register(Ids.TEST_MACHINE, TestMachineMenu::new);
     }
 
     @Override
