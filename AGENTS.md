@@ -22,13 +22,29 @@
 ## Workflow
 
 1. **Before modification**: Read code and documentation, understand existing features and interfaces, make a plan.
-2. **Ensure package nullability**: Every Java package must include a `package-info.java` annotated with `@NullMarked`
+2. **Respect architecture decisions**: For structural changes (new packages, moving or extracting classes, changing
+   dependency direction), consult `docs/architecture.md` first. If a placement is not documented there, ask the user for
+   the intended package/design and record the decision after confirmation.
+3. **Ensure package nullability**: Every Java package must include a `package-info.java` annotated with `@NullMarked`
    (JSpecify). Use `$ensure-package-info` to create any missing files.
-3. **After modification**:
+4. **After modification**:
     - Use IDEA MCP to analyze the project, check for errors, and fix them. Fix warnings where possible; ignore only if
       unavoidable (e.g., fixed Guava version requiring beta graph API).
     - Use IDEA MCP to format code.
     - Do **not** commit code; commits are only performed upon explicit user request.
+
+## Design Principles
+
+1. **Public APIs are interfaces**: Implementations go in `impl` subpackages so callers depend on contracts, not concrete
+   classes.
+2. **Dependencies stay acyclic**: Feature packages may depend on `core`/`util`, but `core` must not gain new reverse
+   dependencies on feature internals (e.g., `item`, `client`, `integration`).
+3. **Prefer composition to inheritance**: Extend framework classes only when NeoForge/Minecraft requires it.
+4. **Prefer immutable data and explicit JSpecify nullability**: Avoid null literals and shared mutable state in new
+   code.
+5. **Cross-feature access goes through public APIs**: Never reach into another feature's internals.
+
+Detailed rationale, examples, and exception criteria: `docs/design-principles.md`.
 
 ## Knowledge Strategy
 
