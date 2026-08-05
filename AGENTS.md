@@ -55,10 +55,10 @@ Detailed rationale, examples, and exception criteria: `docs/design-principles.md
     4. Web search
     5. Model's internal knowledge
 - **Must combine with documentation and code; never answer solely from internal knowledge.**
-- Always first read inline Javadoc from project or dependency source code via IDEA MCP or other means. If Javadoc is
-  insufficient or guidance is needed, perform web search. For specific targets, select the correct version from the
-  official website and read documentation for that version. **If documentation is inaccessible, do not silently skip;
-  inform the user**.
+- **Read project and library sources through IDEA MCP**: Prefer IDEA MCP for Javadoc and source navigation over manually
+  extracting JAR archives. If Javadoc is insufficient or guidance is needed, perform web search. For specific targets,
+  select the correct version from the official website and read documentation for that version. **If documentation is
+  inaccessible, do not silently skip; inform the user**.
 - **Mandatory official documentation sites** (choose the version matching your project dependency):
     - NeoForge: https://docs.neoforged.net/docs/gettingstarted/
     - Mixin: https://github.com/SpongePowered/Mixin/wiki
