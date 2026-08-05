@@ -5,8 +5,6 @@
 - **Must use IDEA MCP for code operations** (e.g., rename, refactor, search, debug, format).  
   If IDEA MCP is not available or not started, **immediately stop and inform the user** that IDEA MCP support is
   required.
-- **Every Java package must include a `package-info.java` annotated with `@NullMarked` (JSpecify). Use
-  `$ensure-package-info` to create missing files.**
 
 ## Prohibited Actions
 
@@ -18,11 +16,15 @@
    includes NeoForge version, mod versions (e.g., Jade), etc.
 4. **Do not download anything without user consent**. Show exact actions (e.g., using `gradlew` for dependency
    management) and await approval.
+5. **Do not hand-write or manually edit generated resources under `src/generated/resources` (models, language files,
+   tags, etc.). Update the corresponding providers under `src/datagen` (Java or Kotlin) and regenerate with datagen.**
 
 ## Workflow
 
 1. **Before modification**: Read code and documentation, understand existing features and interfaces, make a plan.
-2. **After modification**:
+2. **Ensure package nullability**: Every Java package must include a `package-info.java` annotated with `@NullMarked`
+   (JSpecify). Use `$ensure-package-info` to create any missing files.
+3. **After modification**:
     - Use IDEA MCP to analyze the project, check for errors, and fix them. Fix warnings where possible; ignore only if
       unavoidable (e.g., fixed Guava version requiring beta graph API).
     - Use IDEA MCP to format code.
@@ -36,8 +38,7 @@
     3. Official documentation
     4. Web search
     5. Model's internal knowledge
-- **Forbidden**: Use model's internal training knowledge directly. Instead, contextually use pre-trained knowledge but
-  **must** combine with documentation.
+- **Must combine with documentation and code; never answer solely from internal knowledge.**
 - Always first read inline Javadoc from project or dependency source code via IDEA MCP or other means. If Javadoc is
   insufficient or guidance is needed, perform web search. For specific targets, select the correct version from the
   official website and read documentation for that version. **If documentation is inaccessible, do not silently skip;
@@ -48,7 +49,7 @@
 
 ## Tool Usage (including but not limited to)
 
-- Code formatting: IDEA MCP
-- Search and analysis of methods, classes, constants: IDEA MCP
-- Debugging: IDEA MCP
-- Building: `gradlew`
+- All code operations (formatting, search, refactoring, debugging) must be executed through IDEA MCP.
+- Use PowerShell when running terminal commands through IDEA MCP.
+- Gradle tasks (e.g., build, test, datagen) should run through IDEA MCP first; fall back to the `gradlew` CLI only when
+  IDEA MCP cannot run them.
