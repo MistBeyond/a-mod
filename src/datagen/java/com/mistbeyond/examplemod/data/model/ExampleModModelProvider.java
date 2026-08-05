@@ -20,6 +20,7 @@ import static net.minecraft.world.level.block.Blocks.STONE;
 public class ExampleModModelProvider extends net.minecraft.client.data.models.ModelProvider {
     private static final Set<ItemLike> CUSTOM_MODELS = Set.of(
             Init.REGISTRAR.block(Ids.CRUSHER), Init.REGISTRAR.block(Ids.TEST_MACHINE),
+            Init.REGISTRAR.block(Ids.WIRE),
             Items.TEST_WRENCH, Items.EXAMPLE_ITEM
     );
 
@@ -46,6 +47,8 @@ public class ExampleModModelProvider extends net.minecraft.client.data.models.Mo
 
         ExampleModModelGenerators.createSimpleMachine(Init.REGISTRAR.block(Ids.CRUSHER), ExampleModModels.SIMPLE_MACHINE, blockModels);
         ExampleModModelGenerators.createTestMachine(Init.REGISTRAR.block(Ids.TEST_MACHINE), ExampleModModels.SIMPLE_MACHINE, blockModels);
+        ExampleModModelGenerators.createWire(Init.REGISTRAR.block(Ids.WIRE), blockModels);
+        ExampleModModelGenerators.createWireItem(Init.REGISTRAR.item(Ids.WIRE), itemModels);
         ExampleModModelGenerators.generateTestItem(Items.TEST_WRENCH.get(), FIREWORK_ROCKET, itemModels);
         ExampleModModelGenerators.generateTestItem(Items.EXAMPLE_ITEM.get(), STONE, itemModels);
     }

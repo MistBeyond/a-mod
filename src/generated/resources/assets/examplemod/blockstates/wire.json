@@ -1,0 +1,57 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "examplemod:block/wire"
+      }
+    },
+    {
+      "apply": {
+        "model": "examplemod:block/wire_north"
+      },
+      "when": {
+        "north": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "examplemod:block/wire_south"
+      },
+      "when": {
+        "south": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "examplemod:block/wire_east"
+      },
+      "when": {
+        "east": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "examplemod:block/wire_west"
+      },
+      "when": {
+        "west": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "examplemod:block/wire_up"
+      },
+      "when": {
+        "up": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "examplemod:block/wire_down"
+      },
+      "when": {
+        "down": "true"
+      }
+    }
+  ]
+}

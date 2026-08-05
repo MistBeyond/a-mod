@@ -1,0 +1,4 @@
+interface:
+  display_name: "Feature Specs"
+  short_description: "Governs user-owned feature specs under docs/features/."
+  default_prompt: "Use $feature-specs when working with code-specific specs under docs/features/."

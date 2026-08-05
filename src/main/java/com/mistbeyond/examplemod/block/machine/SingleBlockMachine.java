@@ -1,6 +1,6 @@
 package com.mistbeyond.examplemod.block.machine;
 
-import com.mistbeyond.examplemod.block.Wrenchable;
+import com.mistbeyond.examplemod.block.Rotatable;
 import com.mistbeyond.examplemod.block.state.StateProperties;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
-public abstract class SingleBlockMachine extends BaseEntityBlock implements Wrenchable {
+public abstract class SingleBlockMachine extends BaseEntityBlock implements Rotatable {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty WORKING = StateProperties.WORKING;
 
@@ -71,7 +71,7 @@ public abstract class SingleBlockMachine extends BaseEntityBlock implements Wren
 
     @Override
     protected InteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (useWrench(itemStack, state, level, pos, player, hand, hitResult.getDirection())) {
+        if (onWrenchUsed(itemStack, state, level, pos, player, hand, hitResult.getDirection())) {
             return InteractionResult.SUCCESS;
         }
         return super.useItemOn(itemStack, state, level, pos, player, hand, hitResult);

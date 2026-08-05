@@ -1,19 +1,25 @@
 package com.mistbeyond.examplemod.data.model;
 
+import com.mistbeyond.examplemod.Ids;
+import com.mistbeyond.examplemod.block.IConnectableBlock;
 import com.mistbeyond.examplemod.block.state.StateProperties;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.MultiVariant;
+import net.minecraft.client.data.models.blockstates.ConditionBuilder;
+import net.minecraft.client.data.models.blockstates.MultiPartGenerator;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 import static net.minecraft.world.level.block.Blocks.BLAST_FURNACE;
 import static net.minecraft.world.level.block.Blocks.FURNACE;
@@ -78,5 +84,35 @@ public class ExampleModModelGenerators {
                         .dispatch(machine)
                         .with(BlockModelGenerators.createBooleanModelDispatch(BlockStateProperties.LIT, litModel, normalModel))
                         .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+    }
+
+    public static void createWire(Block wire, BlockModelGenerators generator) {
+        MultiPartGenerator multipart = MultiPartGenerator.multiPart(wire)
+                .with(BlockModelGenerators.plainVariant(wireModel("wire")));
+        multipart = withWirePart(multipart, IConnectableBlock.NORTH, "wire_north");
+        multipart = withWirePart(multipart, IConnectableBlock.SOUTH, "wire_south");
+        multipart = withWirePart(multipart, IConnectableBlock.EAST, "wire_east");
+        multipart = withWirePart(multipart, IConnectableBlock.WEST, "wire_west");
+        multipart = withWirePart(multipart, IConnectableBlock.UP, "wire_up");
+        multipart = withWirePart(multipart, IConnectableBlock.DOWN, "wire_down");
+        generator.blockStateOutput.accept(multipart);
+    }
+
+    public static void createWireItem(Item item, ItemModelGenerators generator) {
+        generator.itemModelOutput.accept(
+                item,
+                ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(Ids.MODID, "item/wire"))
+        );
+    }
+
+    private static MultiPartGenerator withWirePart(MultiPartGenerator multipart, BooleanProperty property, String model) {
+        return multipart.with(
+                new ConditionBuilder().term(property, true),
+                BlockModelGenerators.plainVariant(wireModel(model))
+        );
+    }
+
+    private static Identifier wireModel(String path) {
+        return Identifier.fromNamespaceAndPath(Ids.MODID, "block/" + path);
     }
 }

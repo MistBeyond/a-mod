@@ -12,4 +12,10 @@ public non-sealed interface IWire extends IEnergyComponent {
      * Unit: EU/Current^2
      */
     long getResistance();
+
+    /**
+     * Destroys this wire because its current load has remained over the wire's rating.
+     * Implementations are responsible for removing the block and applying destruction effects.
+     */
+    void meltdown();
 }

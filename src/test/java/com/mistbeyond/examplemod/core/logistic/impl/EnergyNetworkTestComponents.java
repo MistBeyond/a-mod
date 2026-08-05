@@ -6,6 +6,7 @@ import com.mistbeyond.examplemod.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
@@ -144,6 +145,11 @@ final class EnergyNetworkTestComponents {
             return connections;
         }
 
+        @Override
+        public boolean canConnectTo(BlockGetter level, BlockPos pos, Direction direction) {
+            return connections().contains(direction);
+        }
+
         long energy() {
             return energy;
         }
@@ -213,6 +219,11 @@ final class EnergyNetworkTestComponents {
             return connections;
         }
 
+        @Override
+        public boolean canConnectTo(BlockGetter level, BlockPos pos, Direction direction) {
+            return connections().contains(direction);
+        }
+
         long stored() {
             return stored;
         }
@@ -261,6 +272,10 @@ final class EnergyNetworkTestComponents {
         }
 
         @Override
+        public void meltdown() {
+        }
+
+        @Override
         public ServerLevel getComponentLevel() {
             return level;
         }
@@ -273,6 +288,11 @@ final class EnergyNetworkTestComponents {
         @Override
         public EnumSet<Direction> connections() {
             return connections;
+        }
+
+        @Override
+        public boolean canConnectTo(BlockGetter level, BlockPos pos, Direction direction) {
+            return connections().contains(direction);
         }
     }
 
@@ -349,6 +369,11 @@ final class EnergyNetworkTestComponents {
         @Override
         public EnumSet<Direction> connections() {
             return connections;
+        }
+
+        @Override
+        public boolean canConnectTo(BlockGetter level, BlockPos pos, Direction direction) {
+            return connections().contains(direction);
         }
 
         long energy() {

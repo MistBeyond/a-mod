@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.BlockGetter;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.Unmodifiable;
@@ -268,6 +269,12 @@ public class EnergyNetwork implements IEnergyNetwork {
         public EnumSet<Direction> connections() {
             notSupport();
             return null;
+        }
+
+        @Override
+        public boolean canConnectTo(BlockGetter level, BlockPos pos, Direction direction) {
+            notSupport();
+            return false;
         }
     }
 

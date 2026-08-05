@@ -6,6 +6,7 @@ import com.mistbeyond.examplemod.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
@@ -287,6 +288,11 @@ class EnergyNetworkTest {
             return connections;
         }
 
+        @Override
+        public boolean canConnectTo(BlockGetter level, BlockPos pos, Direction direction) {
+            return connections().contains(direction);
+        }
+
         long energy() {
             return energy;
         }
@@ -356,6 +362,11 @@ class EnergyNetworkTest {
             return connections;
         }
 
+        @Override
+        public boolean canConnectTo(BlockGetter level, BlockPos pos, Direction direction) {
+            return connections().contains(direction);
+        }
+
         long stored() {
             return stored;
         }
@@ -404,6 +415,10 @@ class EnergyNetworkTest {
         }
 
         @Override
+        public void meltdown() {
+        }
+
+        @Override
         public ServerLevel getComponentLevel() {
             return level;
         }
@@ -416,6 +431,11 @@ class EnergyNetworkTest {
         @Override
         public EnumSet<Direction> connections() {
             return connections;
+        }
+
+        @Override
+        public boolean canConnectTo(BlockGetter level, BlockPos pos, Direction direction) {
+            return connections().contains(direction);
         }
     }
 
@@ -483,6 +503,11 @@ class EnergyNetworkTest {
         @Override
         public EnumSet<Direction> connections() {
             return connections;
+        }
+
+        @Override
+        public boolean canConnectTo(BlockGetter level, BlockPos pos, Direction direction) {
+            return connections().contains(direction);
         }
 
         long energy() {

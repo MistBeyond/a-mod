@@ -6,6 +6,8 @@ public final class Ids {
     public static final String MODID = "examplemod";
     public static final String TEST_MACHINE = "test_machine";
     public static final String CRUSHER = "crusher";
+    public static final String WIRE = "wire";
+    public static final String CONNECTION_CUTTER = "connection_cutter";
 
     private Ids() {
     }

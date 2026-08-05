@@ -1,5 +1,6 @@
 package com.mistbeyond.examplemod.core.logistic.energy;
 
+import com.mistbeyond.examplemod.core.logistic.IConnectable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -7,7 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import java.util.EnumSet;
 import java.util.Set;
 
-public sealed interface IEnergyComponent permits IEnergyConsumer, IEnergyGenerator, IWire {
+public sealed interface IEnergyComponent extends IConnectable permits IEnergyConsumer, IEnergyGenerator, IWire {
     ServerLevel getComponentLevel();
 
     BlockPos getPos();
@@ -16,30 +17,11 @@ public sealed interface IEnergyComponent permits IEnergyConsumer, IEnergyGenerat
         return IEnergyNetworkManager.getInstance().getNetworksAt(getComponentLevel(), getPos());
     }
 
+    @Override
     EnumSet<Direction> connections();
 
-    /**
-     * {@code IEnergyComponent this d| -> Any }
-     */
-    default boolean isConnectTo(Direction direction) {
-        return connections().contains(direction);
-    }
-
-    /**
-     * {@code a.isConnectWith(b) <=> b.isConnectWith(a)}
-     * <p>
-     * {@code (IEnergyComponent this) d| <-> |d.opposite (IEnergyComponent other)}
-     */
     default boolean isConnectWith(IEnergyComponent other) {
-        if (!isNeighbour(other)) {
-            return false;
-        }
-        for (Direction direction : connections()) {
-            if (other.isConnectTo(direction.getOpposite())) {
-                return true;
-            }
-        }
-        return false;
+        return isConnectWith(other, getPos(), other.getPos());
     }
 
     default void onConnectionChanged() {
@@ -53,9 +35,5 @@ public sealed interface IEnergyComponent permits IEnergyConsumer, IEnergyGenerat
 
     default void removeFromNetworks() {
         getNetwork().forEach(n -> n.removeComponent(this));
-    }
-
-    private boolean isNeighbour(IEnergyComponent other) {
-        return this.getPos().closerThan(other.getPos(), 1.01);
     }
 }

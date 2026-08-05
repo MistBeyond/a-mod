@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
 
 @Slf4j
 @RegisterBlock
-public class TestMachine extends BaseEntityBlock implements Wrenchable {
+public class TestMachine extends BaseEntityBlock implements Rotatable {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     private static final MapCodec<TestMachine> CODEC = simpleCodec(TestMachine::new);
@@ -115,7 +115,7 @@ public class TestMachine extends BaseEntityBlock implements Wrenchable {
 
     @Override
     protected InteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (useWrench(itemStack, state, level, pos, player, hand, hitResult.getDirection())) {
+        if (onWrenchUsed(itemStack, state, level, pos, player, hand, hitResult.getDirection())) {
             return InteractionResult.SUCCESS;
         }
         return super.useItemOn(itemStack, state, level, pos, player, hand, hitResult);
