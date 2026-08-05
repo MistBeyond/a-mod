@@ -16,8 +16,8 @@
    includes NeoForge version, mod versions (e.g., Jade), etc.
 4. **Do not download anything without user consent**. Show exact actions (e.g., using `gradlew` for dependency
    management) and await approval.
-5. **Do not hand-write or manually edit generated resources under `src/generated/resources` (models, language files,
-   tags, etc.). Update the corresponding providers under `src/datagen` (Java or Kotlin) and regenerate with datagen.**
+5. **Avoid hand-writing data files (e.g., models, language files, tags). Prefer datagen or existing vanilla resources;
+   hand-write only as a last resort, such as custom model templates.**
 
 ## Workflow
 
