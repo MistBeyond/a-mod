@@ -1,4 +1,4 @@
-package com.mistbeyond.examplemod.data.provider.model;
+package com.mistbeyond.examplemod.data.model;
 
 import com.mistbeyond.examplemod.Ids;
 import com.mistbeyond.examplemod.Init;
@@ -17,13 +17,13 @@ import static net.minecraft.world.item.Items.FIREWORK_ROCKET;
 import static net.minecraft.world.level.block.Blocks.STONE;
 
 
-public class ModModelProvider extends net.minecraft.client.data.models.ModelProvider {
+public class ExampleModModelProvider extends net.minecraft.client.data.models.ModelProvider {
     private static final Set<ItemLike> CUSTOM_MODELS = Set.of(
             Init.REGISTRAR.block(Ids.CRUSHER), Init.REGISTRAR.block(Ids.TEST_MACHINE),
             Items.TEST_WRENCH, Items.EXAMPLE_ITEM
     );
 
-    public ModModelProvider(PackOutput output) {
+    public ExampleModModelProvider(PackOutput output) {
         super(output, Ids.MODID);
     }
 
@@ -35,7 +35,7 @@ public class ModModelProvider extends net.minecraft.client.data.models.ModelProv
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
         for (var holder : Blocks.BLOCKS.getEntries()) {
             if (!isCustom(holder.get()))
-                blockModels.createTrivialBlock(holder.get(), ModModels.TEST_CUBE);
+                blockModels.createTrivialBlock(holder.get(), ExampleModModels.TEST_CUBE);
         }
 
         for (var holder : Items.ITEMS.getEntries()) {
@@ -44,9 +44,9 @@ public class ModModelProvider extends net.minecraft.client.data.models.ModelProv
                 itemModels.generateFlatItem(item, ModelTemplates.FLAT_ITEM);
         }
 
-        ModelGenerators.createSimpleMachine(Init.REGISTRAR.block(Ids.CRUSHER), ModModels.SIMPLE_MACHINE, blockModels);
-        ModelGenerators.createTestMachine(Init.REGISTRAR.block(Ids.TEST_MACHINE), ModModels.SIMPLE_MACHINE, blockModels);
-        ModelGenerators.generateTestItem(Items.TEST_WRENCH.get(), FIREWORK_ROCKET, itemModels);
-        ModelGenerators.generateTestItem(Items.EXAMPLE_ITEM.get(), STONE, itemModels);
+        ExampleModModelGenerators.createSimpleMachine(Init.REGISTRAR.block(Ids.CRUSHER), ExampleModModels.SIMPLE_MACHINE, blockModels);
+        ExampleModModelGenerators.createTestMachine(Init.REGISTRAR.block(Ids.TEST_MACHINE), ExampleModModels.SIMPLE_MACHINE, blockModels);
+        ExampleModModelGenerators.generateTestItem(Items.TEST_WRENCH.get(), FIREWORK_ROCKET, itemModels);
+        ExampleModModelGenerators.generateTestItem(Items.EXAMPLE_ITEM.get(), STONE, itemModels);
     }
 }

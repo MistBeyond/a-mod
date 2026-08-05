@@ -1,4 +1,4 @@
 @NullMarked
-package com.mistbeyond.examplemod.data.provider.model;
+package com.mistbeyond.examplemod.data.recipe.builder;
 
 import org.jspecify.annotations.NullMarked;

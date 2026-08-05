@@ -1,4 +1,4 @@
-package com.mistbeyond.examplemod.data.provider.model;
+package com.mistbeyond.examplemod.data.model;
 
 import com.mistbeyond.examplemod.block.state.StateProperties;
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import static net.minecraft.world.level.block.Blocks.BLAST_FURNACE;
 import static net.minecraft.world.level.block.Blocks.FURNACE;
 
-public class ModelGenerators {
+public class ExampleModModelGenerators {
     public static void generateTestItem(Item acceptor, ItemLike donor, ItemModelGenerators generator) {
         TextureMapping mapping;
         if (donor instanceof Block)

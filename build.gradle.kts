@@ -94,6 +94,17 @@ tasks {
     }
 
     build.get().dependsOn(runEarlyCheck)
+
+    test {
+        useJUnitPlatform()
+        maxHeapSize = "2g"
+        jvmArgs(
+            "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+            "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED",
+            "--add-opens", "java.base/java.util=ALL-UNNAMED",
+            "--add-opens", "java.base/java.util.concurrent=ALL-UNNAMED",
+        )
+    }
 }
 
 neoForge {
@@ -169,6 +180,11 @@ neoForge {
             sourceSet(sourceSets["datagen"])
         }
     }
+
+    unitTest {
+        enable()
+        testedMod = mods[modId]
+    }
 }
 
 // Sets up a dependency configuration called "localRuntime".
@@ -200,6 +216,13 @@ dependencies {
     // Jade
     compileOnly("maven.modrinth:jade:$jadeVersion")
     localRuntime("maven.modrinth:jade:$jadeVersion")
+
+    // test
+    testImplementation(platform("org.junit:junit-bom:5.14.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.mockito:mockito-core:5.23.0")
+    testImplementation("net.bytebuddy:byte-buddy:1.18.11")
 }
 
 var generateModMetadata = tasks.register<ProcessResources>("generateModMetadata") {

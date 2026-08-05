@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION", "LombokKotlinCompilerPlugin")
 
-package com.mistbeyond.examplemod.data.provider
+package com.mistbeyond.examplemod.data.lang
 
 import com.mistbeyond.examplemod.Ids
 import com.mistbeyond.examplemod.block.Blocks
@@ -13,7 +13,7 @@ import net.minecraft.world.item.BlockItem
 import net.neoforged.neoforge.common.data.LanguageProvider
 import org.apache.commons.lang3.text.WordUtils
 
-class ModLanguageProvider(output: PackOutput) : LanguageProvider(output, Ids.MODID, "en_us") {
+class ExampleModLanguageProvider(output: PackOutput) : LanguageProvider(output, Ids.MODID, "en_us") {
     override fun addTranslations() {
         add("itemGroup.examplemod", "Example Tab")
         add("examplemod.overlaymessage.wrench.rotation_failed", "Rotation failed on %s axis")

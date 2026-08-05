@@ -1,4 +1,4 @@
-package com.mistbeyond.examplemod.data.provider;
+package com.mistbeyond.examplemod.data.tags;
 
 import com.mistbeyond.examplemod.Ids;
 import com.mistbeyond.examplemod.item.Items;
@@ -9,8 +9,8 @@ import net.neoforged.neoforge.common.data.ItemTagsProvider;
 
 import java.util.concurrent.CompletableFuture;
 
-public class ModItemTagsProvider extends ItemTagsProvider {
-    public ModItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+public class ExampleModItemTagsProvider extends ItemTagsProvider {
+    public ExampleModItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
         super(output, lookupProvider, Ids.MODID);
     }
 

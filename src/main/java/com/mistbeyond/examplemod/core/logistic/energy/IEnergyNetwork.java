@@ -3,6 +3,7 @@ package com.mistbeyond.examplemod.core.logistic.energy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 
@@ -38,7 +39,7 @@ public interface IEnergyNetwork {
      * @return the actually delivered transfer info, or {@link EUTransferInfo#ZERO} when no
      * generator route could satisfy the request
      */
-    EUTransferInfo pullEnergy(IEnergyConsumer consumer, EUTransferInfo info, TransactionContext transaction);
+    EUTransferInfo pullEnergy(IEnergyConsumer consumer, EUTransferInfo info, @Nullable TransactionContext transaction);
 
     void onComponentConnectionChanged(IEnergyComponent component);
 

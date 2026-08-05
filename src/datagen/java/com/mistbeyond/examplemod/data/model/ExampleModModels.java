@@ -1,4 +1,4 @@
-package com.mistbeyond.examplemod.data.provider.model;
+package com.mistbeyond.examplemod.data.model;
 
 import com.mistbeyond.examplemod.Ids;
 import net.minecraft.client.data.models.model.*;
@@ -8,10 +8,10 @@ import net.minecraft.world.level.block.Block;
 
 import java.util.Optional;
 
-public class ModModels {
+public class ExampleModModels {
     // -- textured model providers --
     public static final TexturedModel.Provider TEST_CUBE = TexturedModel.createDefault(
-            ModModels::testCube, ModelTemplates.CUBE_ALL
+            ExampleModModels::testCube, ModelTemplates.CUBE_ALL
     );
     // -- templates --
     private static final ModelTemplate SIMPLE_MACHINE_TEMPLATE = new ModelTemplate(
@@ -21,7 +21,7 @@ public class ModModels {
             TextureSlot.FRONT
     );
     public static final TexturedModel.Provider SIMPLE_MACHINE = TexturedModel.createDefault(
-            ModModels::simpleMachine, SIMPLE_MACHINE_TEMPLATE
+            ExampleModModels::simpleMachine, SIMPLE_MACHINE_TEMPLATE
     );
 
     // -- texture mappings --

@@ -1,4 +1,4 @@
-package com.mistbeyond.examplemod.data.provider.recipe.builder;
+package com.mistbeyond.examplemod.data.recipe.builder;
 
 import com.mistbeyond.examplemod.recipe.CrushingRecipe;
 import com.mistbeyond.examplemod.recipe.ElectricRecipe;

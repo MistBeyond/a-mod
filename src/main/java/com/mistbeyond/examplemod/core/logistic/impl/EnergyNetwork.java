@@ -1,6 +1,8 @@
 package com.mistbeyond.examplemod.core.logistic.impl;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Multimaps;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
@@ -18,6 +20,7 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jetbrains.annotations.UnmodifiableView;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -29,6 +32,18 @@ public class EnergyNetwork implements IEnergyNetwork {
 
     public EnergyNetwork(ServerLevel level) {
         this.level = level;
+    }
+
+    /**
+     * Line loss on a route for one tick: {@code resistance * current^2}, saturated.
+     */
+    private static long lineLoss(long totalResistance, long current) {
+        return Util.saturatedPositiveMultiply(totalResistance, Util.saturatedPositiveMultiply(current, current));
+    }
+
+    private static long saturatedAdd(long a, long b) {
+        long sum = a + b;
+        return sum < 0 ? Long.MAX_VALUE : sum;
     }
 
     @Override
@@ -47,7 +62,7 @@ public class EnergyNetwork implements IEnergyNetwork {
     }
 
     @Override
-    public EUTransferInfo pullEnergy(IEnergyConsumer consumer, EUTransferInfo info, TransactionContext transaction) {
+    public EUTransferInfo pullEnergy(IEnergyConsumer consumer, EUTransferInfo info, @Nullable TransactionContext transaction) {
         long requested = info.power();
         if (requested <= 0) {
             return EUTransferInfo.ZERO;
@@ -94,18 +109,6 @@ public class EnergyNetwork implements IEnergyNetwork {
         return EUTransferInfo.ZERO;
     }
 
-    /**
-     * Line loss on a route for one tick: {@code resistance * current^2}, saturated.
-     */
-    private static long lineLoss(long totalResistance, long current) {
-        return Util.saturatedPositiveMultiply(totalResistance, Util.saturatedPositiveMultiply(current, current));
-    }
-
-    private static long saturatedAdd(long a, long b) {
-        long sum = a + b;
-        return sum < 0 ? Long.MAX_VALUE : sum;
-    }
-
     @Override
     public void onComponentConnectionChanged(IEnergyComponent component) {
         onComponentConnectionChanged(component, false);
@@ -140,33 +143,6 @@ public class EnergyNetwork implements IEnergyNetwork {
         if (componentGraph.nodes().isEmpty()) {
             EnergyNetworkManager.INSTANCE.unregister(this);
         }
-    }
-
-    /**
-     * Splits the remaining graph nodes into connected components (BFS).
-     */
-    private List<Set<IEnergyComponent>> connectedComponents() {
-        Set<IEnergyComponent> remaining = new HashSet<>(componentGraph.nodes());
-        List<Set<IEnergyComponent>> parts = new ArrayList<>();
-        while (!remaining.isEmpty()) {
-            IEnergyComponent start = remaining.iterator().next();
-            Set<IEnergyComponent> part = new HashSet<>();
-            ArrayDeque<IEnergyComponent> visiting = new ArrayDeque<>();
-            remaining.remove(start);
-            part.add(start);
-            visiting.addLast(start);
-            while (!visiting.isEmpty()) {
-                IEnergyComponent curr = visiting.removeFirst();
-                for (IEnergyComponent adjacent : componentGraph.adjacentNodes(curr)) {
-                    if (remaining.remove(adjacent)) {
-                        part.add(adjacent);
-                        visiting.addLast(adjacent);
-                    }
-                }
-            }
-            parts.add(part);
-        }
-        return parts;
     }
 
     @Override
@@ -225,6 +201,33 @@ public class EnergyNetwork implements IEnergyNetwork {
         return added;
     }
 
+    /**
+     * Splits the remaining graph nodes into connected components (BFS).
+     */
+    private List<Set<IEnergyComponent>> connectedComponents() {
+        Set<IEnergyComponent> remaining = new HashSet<>(componentGraph.nodes());
+        List<Set<IEnergyComponent>> parts = new ArrayList<>();
+        while (!remaining.isEmpty()) {
+            IEnergyComponent start = remaining.iterator().next();
+            Set<IEnergyComponent> part = new HashSet<>();
+            ArrayDeque<IEnergyComponent> visiting = new ArrayDeque<>();
+            remaining.remove(start);
+            part.add(start);
+            visiting.addLast(start);
+            while (!visiting.isEmpty()) {
+                IEnergyComponent curr = visiting.removeFirst();
+                for (IEnergyComponent adjacent : componentGraph.adjacentNodes(curr)) {
+                    if (remaining.remove(adjacent)) {
+                        part.add(adjacent);
+                        visiting.addLast(adjacent);
+                    }
+                }
+            }
+            parts.add(part);
+        }
+        return parts;
+    }
+
     private void onComponentModified() {
         cache.updateFully(componentGraph);
     }
@@ -238,7 +241,7 @@ public class EnergyNetwork implements IEnergyNetwork {
         }
 
         @Override
-        public EUTransferInfo insertEU(EUTransferInfo info, TransactionContext transaction) {
+        public EUTransferInfo insertEU(EUTransferInfo info, @Nullable TransactionContext transaction) {
             notSupport();
             return null;
         }
@@ -347,6 +350,23 @@ public class EnergyNetwork implements IEnergyNetwork {
             }
         }
 
+        private static long wireCost(IEnergyComponent component) {
+            return component instanceof IWire wire ? wire.getResistance() : 0;
+        }
+
+        private static void relax(HashMap<IEnergyComponent, IEnergyComponent> parentMap,
+                                  HashMap<IEnergyComponent, Long> bestCost,
+                                  PriorityQueue<RouteStep> queue,
+                                  IEnergyComponent successor,
+                                  IEnergyComponent parent,
+                                  long cost) {
+            if (cost < bestCost.getOrDefault(successor, Long.MAX_VALUE)) {
+                bestCost.put(successor, cost);
+                parentMap.put(successor, parent);
+                queue.add(new RouteStep(successor, cost));
+            }
+        }
+
         // todo: Incremental Update
         public void updateFully(Graph<IEnergyComponent> graph) {
             updateComponents(graph);
@@ -385,40 +405,44 @@ public class EnergyNetwork implements IEnergyNetwork {
             energyNetwork = MultimapBuilder.hashKeys(generators.size()).arrayListValues().build();
 
             HashMap<IEnergyComponent, IEnergyComponent> parentMap = HashMap.newHashMap(graph.nodes().size());
-            Set<IEnergyComponent> visited = HashSet.newHashSet(graph.nodes().size());
-            ArrayDeque<IEnergyComponent> visiting = new ArrayDeque<>();
+            HashMap<IEnergyComponent, Long> bestCost = HashMap.newHashMap(graph.nodes().size());
+            PriorityQueue<RouteStep> queue = new PriorityQueue<>(Comparator.comparingLong(RouteStep::cost));
 
             for (IEnergyGenerator generator : generators) {
                 parentMap.clear();
-                visited.clear();
-                visiting.clear();
+                bestCost.clear();
+                queue.clear();
 
                 parentMap.put(generator, Flag.ROOT);
-                for (IEnergyComponent successor : graph.successors(generator)) {
-                    if (visited.add(successor)) {
-                        parentMap.put(successor, generator);
-                        visiting.addLast(successor);
+                bestCost.put(generator, 0L);
+                queue.add(new RouteStep(generator, 0L));
+                while (!queue.isEmpty()) {
+                    RouteStep current = queue.remove();
+                    IEnergyComponent node = current.node;
+                    if (current.cost != bestCost.getOrDefault(node, Long.MAX_VALUE)) {
+                        continue;
                     }
-                }
-                // bfs
-                while (!visiting.isEmpty()) {
-                    var curr = visiting.removeFirst();
-                    switch (curr) {
-                        case IWire wire -> {
-                            for (IEnergyComponent successor : graph.successors(wire)) {
-                                if (visited.add(successor)) {
-                                    parentMap.put(successor, curr);
-                                    visiting.addLast(successor);
-                                }
-                            }
+                    if (node instanceof IEnergyConsumer consumer) {
+                        if (node != generator) {
+                            energyNetwork.put(consumer, buildRoute(consumer, parentMap));
+                            continue;
                         }
-                        case IEnergyConsumer con -> energyNetwork.put(con, buildRoute(con, parentMap));
-                        default -> {
+                    }
+                    if (node instanceof IWire wire) {
+                        for (IEnergyComponent successor : graph.successors(wire)) {
+                            relax(parentMap, bestCost, queue, successor, wire, current.cost + wireCost(successor));
+                        }
+                    } else if (node == generator) {
+                        for (IEnergyComponent successor : graph.successors(generator)) {
+                            relax(parentMap, bestCost, queue, successor, generator, current.cost + wireCost(successor));
                         }
                     }
                 }
             }
             energyNetworkView = Multimaps.unmodifiableListMultimap(energyNetwork);
+        }
+
+        private record RouteStep(IEnergyComponent node, long cost) {
         }
     }
 }

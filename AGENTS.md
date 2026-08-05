@@ -5,6 +5,8 @@
 - **Must use IDEA MCP for code operations** (e.g., rename, refactor, search, debug, format).  
   If IDEA MCP is not available or not started, **immediately stop and inform the user** that IDEA MCP support is
   required.
+- **Every Java package must include a `package-info.java` annotated with `@NullMarked` (JSpecify). Use
+  `$ensure-package-info` to create missing files.**
 
 ## Prohibited Actions
 

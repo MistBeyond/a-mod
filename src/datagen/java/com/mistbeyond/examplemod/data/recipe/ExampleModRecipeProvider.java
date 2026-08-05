@@ -1,6 +1,6 @@
-package com.mistbeyond.examplemod.data.provider.recipe;
+package com.mistbeyond.examplemod.data.recipe;
 
-import com.mistbeyond.examplemod.data.provider.recipe.builder.CrushingRecipeBuilder;
+import com.mistbeyond.examplemod.data.recipe.builder.CrushingRecipeBuilder;
 import com.mistbeyond.examplemod.recipe.ElectricRecipe;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
