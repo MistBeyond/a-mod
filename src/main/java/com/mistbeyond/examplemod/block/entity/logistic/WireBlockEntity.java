@@ -8,8 +8,8 @@ import com.mistbeyond.examplemod.core.Values;
 import com.mistbeyond.examplemod.core.logistic.energy.EUTransferInfo;
 import com.mistbeyond.examplemod.core.logistic.energy.IWire;
 import com.mistbeyond.examplemod.core.logistic.energy.WireMeltdownState;
-import com.mistbeyond.examplemod.core.registry.ProvideFactory;
-import com.mistbeyond.examplemod.core.registry.RegisterBlockEntityType;
+import com.mistbeyond.registry.ProvideFactory;
+import com.mistbeyond.registry.RegisterBlockEntityType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -118,15 +118,6 @@ public class WireBlockEntity extends EnergyComponentBlockEntity implements IWire
         output.putInt("over_current_ticks", meltdownState.overCurrentTicks());
         output.putBoolean("meltdown_pending", meltdownState.isMeltdownPending());
         output.putLong("disabled_connections", disabledConnectionsMask());
-    }
-
-    @Override
-    public void setBlockState(BlockState state) {
-        BlockState old = getBlockState();
-        super.setBlockState(state);
-        if (level instanceof ServerLevel && !old.equals(state)) {
-            onConnectionChanged();
-        }
     }
 
     private void tickMeltdown() {

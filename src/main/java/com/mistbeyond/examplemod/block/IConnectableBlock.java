@@ -71,7 +71,7 @@ public interface IConnectableBlock extends IConnectable {
 
     /**
      * Computes the state used when this block is placed. When the placement face touches an
-     * allowed connectable, the contact face is connected; any neighbour that already connects
+     * allowed connectable, the contact face is connected; any neighbor that already connects
      * towards this position is also connected.
      */
     default BlockState getPlacementConnectionState(BlockState state, BlockPlaceContext context) {
@@ -98,7 +98,7 @@ public interface IConnectableBlock extends IConnectable {
     }
 
     /**
-     * Connects the contact face when the neighbour connects towards this block. Never disconnects
+     * Connects the contact face when the neighbor connects towards this block. Never disconnects
      * an existing connection automatically.
      */
     default BlockState updateConnectionState(BlockState state, LevelReader level, BlockPos pos, Direction direction) {

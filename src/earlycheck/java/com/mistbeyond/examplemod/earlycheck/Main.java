@@ -1,9 +1,9 @@
 package com.mistbeyond.examplemod.earlycheck;
 
 import com.google.common.base.Stopwatch;
-import com.mistbeyond.examplemod.core.registry.impl.CheckReport;
-import com.mistbeyond.examplemod.core.registry.impl.Checks;
-import com.mistbeyond.examplemod.core.registry.impl.ClassContainer;
+import com.mistbeyond.registry.impl.CheckReport;
+import com.mistbeyond.registry.impl.Checks;
+import com.mistbeyond.registry.impl.ClassContainer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;

@@ -3,10 +3,10 @@ package com.mistbeyond.examplemod.block.entity;
 import com.mistbeyond.examplemod.Ids;
 import com.mistbeyond.examplemod.Init;
 import com.mistbeyond.examplemod.block.TestMachine;
-import com.mistbeyond.examplemod.core.registry.ProvideFactory;
-import com.mistbeyond.examplemod.core.registry.RegisterBlockEntityType;
 import com.mistbeyond.examplemod.inventory.TestMachineMenu;
 import com.mistbeyond.examplemod.util.transfer.StacksHandlerUtil;
+import com.mistbeyond.registry.ProvideFactory;
+import com.mistbeyond.registry.RegisterBlockEntityType;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -57,10 +57,6 @@ public class TestMachineBlockEntity extends BlockEntity implements MenuProvider 
             setChanged();
         }
     };
-    private int litRemaining;
-    private int litTotal;
-    private int smeltProgress;
-    private int smeltTotal;
     private final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int dataId) {
@@ -88,6 +84,10 @@ public class TestMachineBlockEntity extends BlockEntity implements MenuProvider 
             return 4;
         }
     };
+    private int litRemaining;
+    private int litTotal;
+    private int smeltProgress;
+    private int smeltTotal;
 
     public TestMachineBlockEntity(BlockPos worldPosition, BlockState blockState) {
         super(Init.REGISTRAR.blockEntityType(Ids.TEST_MACHINE), worldPosition, blockState);

@@ -34,7 +34,7 @@ before modifying `IConnectable`, `IConnectableBlock`,
 6. When a block is placed, the new block state comes from `getPlacementConnectionState`; the existing neighbor updates
    itself through `updateShape -> updateConnectionState`.
 7. Notify the energy/logistic network only after the state is actually applied.
-   `WireBlockEntity.setBlockState` is the hook that calls `onConnectionChanged`.
+   `WireBlock.onBlockStateChange` is the server-side hook that calls `onConnectionChanged`.
 
 ## Model and data
 

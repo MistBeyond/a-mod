@@ -2,9 +2,9 @@ package com.mistbeyond.examplemod.item;
 
 import com.mistbeyond.examplemod.Ids;
 import com.mistbeyond.examplemod.block.IConnectableBlock;
-import com.mistbeyond.examplemod.core.registry.RegisterItem;
-import com.mistbeyond.examplemod.core.registry.SubscribeRegistration;
-import com.mistbeyond.examplemod.core.registry.impl.ItemRegistration;
+import com.mistbeyond.registry.RegisterItem;
+import com.mistbeyond.registry.SubscribeRegistration;
+import com.mistbeyond.registry.impl.ItemRegistration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;

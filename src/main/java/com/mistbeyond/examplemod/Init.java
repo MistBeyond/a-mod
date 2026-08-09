@@ -4,11 +4,11 @@ import com.mistbeyond.examplemod.block.Blocks;
 import com.mistbeyond.examplemod.block.entity.TestMachineBlockEntity;
 import com.mistbeyond.examplemod.block.entity.machine.CrusherEntity;
 import com.mistbeyond.examplemod.core.energy.EUEnergyHandler;
-import com.mistbeyond.examplemod.core.registry.CommonRegistrar;
 import com.mistbeyond.examplemod.item.Items;
 import com.mistbeyond.examplemod.item.componet.ModDataComponents;
 import com.mistbeyond.examplemod.recipe.RecipeSerializers;
 import com.mistbeyond.examplemod.recipe.RecipeTypes;
+import com.mistbeyond.registry.CommonRegistrar;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -27,6 +27,8 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.List;
+
 import static net.minecraft.world.item.Items.GRASS_BLOCK;
 
 
@@ -38,7 +40,14 @@ public class Init {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(
             BuiltInRegistries.BLOCK_ENTITY_TYPE, Ids.MODID);
     public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(BuiltInRegistries.MENU, Ids.MODID);
-    public static final CommonRegistrar REGISTRAR = CommonRegistrar.of(Ids.MODID, Blocks.BLOCKS, Items.ITEMS, BLOCK_ENTITIES, MENU_TYPES);
+    public static final CommonRegistrar REGISTRAR = CommonRegistrar.of(
+            Ids.MODID, Blocks.BLOCKS, Items.ITEMS, BLOCK_ENTITIES, MENU_TYPES,
+            List.of(
+                    "com.mistbeyond.examplemod.earlycheck",
+                    "com.mistbeyond.examplemod.data",
+                    "com.mistbeyond.examplemod.integration"
+            )
+    );
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register(
             "example_tab", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.examplemod")) //The language key for the title of your CreativeModeTab

@@ -1,10 +1,10 @@
 package com.mistbeyond.examplemod.client.screen.inventory.machine;
 
 import com.mistbeyond.examplemod.Ids;
-import com.mistbeyond.examplemod.core.registry.RegisterContainerScreen;
-import com.mistbeyond.examplemod.core.registry.SubscribeRegistration;
-import com.mistbeyond.examplemod.core.registry.impl.ContainerScreenRegistration;
 import com.mistbeyond.examplemod.inventory.machine.CrusherMenu;
+import com.mistbeyond.registry.RegisterContainerScreen;
+import com.mistbeyond.registry.SubscribeRegistration;
+import com.mistbeyond.registry.impl.ContainerScreenRegistration;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;

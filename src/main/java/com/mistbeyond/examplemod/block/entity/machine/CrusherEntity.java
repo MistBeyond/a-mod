@@ -6,14 +6,14 @@ import com.mistbeyond.examplemod.core.VoltageTier;
 import com.mistbeyond.examplemod.core.energy.EUEnergyHandler;
 import com.mistbeyond.examplemod.core.energy.SimpleEUHandler;
 import com.mistbeyond.examplemod.core.logistic.energy.EUTransferInfo;
-import com.mistbeyond.examplemod.core.registry.ProvideFactory;
-import com.mistbeyond.examplemod.core.registry.RegisterBlockEntityType;
 import com.mistbeyond.examplemod.inventory.machine.CrusherMenu;
 import com.mistbeyond.examplemod.recipe.CrushingRecipe;
 import com.mistbeyond.examplemod.recipe.RecipeTypes;
 import com.mistbeyond.examplemod.util.EnergyUtil;
 import com.mistbeyond.examplemod.util.ItemUtil;
 import com.mistbeyond.examplemod.util.transfer.StacksHandlerUtil;
+import com.mistbeyond.registry.ProvideFactory;
+import com.mistbeyond.registry.RegisterBlockEntityType;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.core.BlockPos;
@@ -48,12 +48,6 @@ import java.util.Objects;
 public class CrusherEntity extends SingleBlockMachineEntity<CrushingRecipe> implements CanProcessItem {
     private static final int MAX_CURRENT = 2;
     private static final VoltageTier VOLTAGE_TIER = VoltageTier.LOW;
-    private final EUEnergyHandler energyHandler = new SimpleEUHandler(VOLTAGE_TIER);
-    private final RecipeManager.CachedCheck<SingleRecipeInput, CrushingRecipe> quickCheck = RecipeManager.createCheck(RecipeTypes.CRUSHING.get());
-    @Getter
-    private final InnerItemHandler itemHandler = new InnerItemHandler(3);
-    private final Journal journal = new Journal();
-    private int progress;
     public final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int dataId) {
@@ -78,6 +72,12 @@ public class CrusherEntity extends SingleBlockMachineEntity<CrushingRecipe> impl
             return 2;
         }
     };
+    private final EUEnergyHandler energyHandler = new SimpleEUHandler(VOLTAGE_TIER);
+    private final RecipeManager.CachedCheck<SingleRecipeInput, CrushingRecipe> quickCheck = RecipeManager.createCheck(RecipeTypes.CRUSHING.get());
+    @Getter
+    private final InnerItemHandler itemHandler = new InnerItemHandler(3);
+    private final Journal journal = new Journal();
+    private int progress;
     private boolean isWorking = false;
     private boolean itemConsumed = false;
 

@@ -52,7 +52,21 @@ sourceSets {
     }
 }
 
+// NeoForge unit tests load mod classes through the transforming classloader, so the
+// registry library must also be visible as a mod folder; the production jar still
+// carries it via jarJar only.
+val registryLibRuntime = sourceSets.create("registryLibRuntime")
+
+val unpackRegistryLib = tasks.register<Copy>("unpackRegistryLib") {
+    description = ""
+    from(configurations.compileClasspath.get().files.filter { it.name.startsWith("registry-lib-") }.map { zipTree(it) })
+    into(layout.buildDirectory.dir("registry-lib-classes"))
+}
+
+registryLibRuntime.output.dir(mapOf("builtBy" to unpackRegistryLib), layout.buildDirectory.dir("registry-lib-classes"))
+
 repositories {
+    mavenLocal()
     // Add here additional repositories if required by some of the dependencies below.
     mavenCentral()
     maven {
@@ -178,6 +192,7 @@ neoForge {
         create(modId) {
             sourceSet(sourceSets.main.get())
             sourceSet(sourceSets["datagen"])
+            sourceSet(registryLibRuntime)
         }
     }
 
@@ -198,12 +213,18 @@ configurations {
     named("datagenCompileClasspath") { extendsFrom(compileClasspath.get()) }
     named("earlycheckRuntimeClasspath") { extendsFrom(runtimeClasspath.get()) }
     named("earlycheckCompileClasspath") { extendsFrom(compileClasspath.get()) }
+    named("testRuntimeClasspath") {
+        exclude(group = "com.mistbeyond", module = "registry-lib")
+    }
 }
 
 dependencies {
     fun DependencyHandler.localRuntime(dep: Any) = add("localRuntime", dep)
     val jeiVersion = findProperty("jei_version") as String
     val jadeVersion = findProperty("jade_version") as String
+
+    // local registry library
+    jarJar(implementation("com.mistbeyond:registry-lib:1.1.0") {})
 
     // datagen
     "datagenImplementation"(kotlin("stdlib"))

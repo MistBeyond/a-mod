@@ -10,8 +10,8 @@ section stays short by design; the rationale lives here.
   behavior easier to test and mock.
 - **How to apply**: New cross-package public APIs are interfaces. Implementation classes live in an `impl` subpackage
   and stay package-private where possible.
-- **Example**: `core.registry` and `core.logistic` expose interfaces with implementations under
-  `core/registry/impl` and `core/logistic/impl`.
+- **Example**: `core.logistic` exposes interfaces with implementations under `core/logistic/impl`; registration
+  contracts come from the external `registry-lib` library (`com.mistbeyond.registry` with its `impl` subpackage).
 - **When to break**: Framework integration requires concrete types, for example blocks, items, and block entities must
   subclass NeoForge/Minecraft classes. Single-consumer internal helpers may remain plain classes.
 
@@ -64,8 +64,6 @@ section stays short by design; the rationale lives here.
 The following `core` files reference feature internals directly. Treat them as debt: new code must not add reverse
 dependencies or widen these references; refactor them when touched.
 
-- `src/main/java/com/mistbeyond/examplemod/core/registry/impl/CommonRegistryTable.java` - references `integration`
-  through a hard-coded package name.
 - `src/main/java/com/mistbeyond/examplemod/core/energy/EUEnergyHandler.java` - imports `item.ElectricItem`.
 - `src/main/java/com/mistbeyond/examplemod/core/energy/ItemAccessEUHandler.java` - imports `item.ElectricItem` and
   `item.componet.ModDataComponents`.

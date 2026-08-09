@@ -18,6 +18,8 @@
    management) and await approval.
 5. **Avoid hand-writing data files (e.g., models, language files, tags). Prefer datagen or existing vanilla resources;
    hand-write only as a last resort, such as custom model templates.**
+6. **Do not embed local absolute paths in project files** (e.g., paths to Gradle caches, Maven repositories, or IDE
+   settings).
 
 ## Workflow
 
@@ -66,6 +68,7 @@ Detailed rationale, examples, and exception criteria: `docs/design-principles.md
 ## Tool Usage (including but not limited to)
 
 - All code operations (formatting, search, refactoring, debugging) must be executed through IDEA MCP.
-- Use PowerShell when running terminal commands through IDEA MCP.
+- Prefer IDEA MCP's tool list for IDEA-supported operations; avoid using IDEA MCP's built-in terminal emulator.
+- Run shell commands in the agent's own built-in terminal.
 - Gradle tasks (e.g., build, test, datagen) should run through IDEA MCP first; fall back to the `gradlew` CLI only when
   IDEA MCP cannot run them.

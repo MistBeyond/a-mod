@@ -4,9 +4,9 @@ import com.mistbeyond.examplemod.Ids;
 import com.mistbeyond.examplemod.Init;
 import com.mistbeyond.examplemod.block.entity.logistic.WireBlockEntity;
 import com.mistbeyond.examplemod.core.logistic.energy.IEnergyComponent;
-import com.mistbeyond.examplemod.core.registry.RegisterBlock;
-import com.mistbeyond.examplemod.core.registry.SubscribeRegistration;
-import com.mistbeyond.examplemod.core.registry.impl.BlockRegistration;
+import com.mistbeyond.registry.RegisterBlock;
+import com.mistbeyond.registry.SubscribeRegistration;
+import com.mistbeyond.registry.impl.BlockRegistration;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -121,6 +121,15 @@ public class WireBlock extends BaseEntityBlock implements IConnectableBlock {
     @Override
     public void onConnectionsChanged(Level level, BlockPos pos) {
         if (level.getBlockEntity(pos) instanceof WireBlockEntity wire) {
+            wire.onConnectionChanged();
+        }
+    }
+
+    @Override
+    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
+        if (level instanceof ServerLevel
+                && !oldState.equals(newState)
+                && level.getBlockEntity(pos) instanceof WireBlockEntity wire) {
             wire.onConnectionChanged();
         }
     }
